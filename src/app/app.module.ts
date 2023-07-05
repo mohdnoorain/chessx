@@ -1,8 +1,16 @@
-import { NgModule } from '@angular/core';
+import { Component, NgModule, OnInit } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+
+
+@Component({
+  selector: 'app-root',
+  template: '<router-outlet></router-outlet>',
+})
+export class AppComponent implements OnInit {
+  ngOnInit() { }
+}
 
 @NgModule({
   declarations: [
