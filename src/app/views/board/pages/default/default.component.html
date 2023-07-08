@@ -1,37 +1,39 @@
 <div class="container">
     <button style="visibility: hidden;" #hhh (click)="refreshP()"></button>
     <!-- board area  -->
-    <div *ngIf="(remoteConnectionStatus||offerConnectionStatus)">
+    <div *ngIf="(remoteConnectionStatus||offerConnectionStatus||true)">
         <ng-container *ngFor="let row of boardArray; index as i;">
-            <div class="row r-1 bg-mutd text-center">
+            <div class="row">
                 <ng-container *ngFor="let items of row; index as j;">
-                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col-1 bbox"
+                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
                         [class.bg-dark]="(i+j)%2">
-                        <img [src]="items.src" [class]="items.clipType" [class.whiteP]="items.playerC" />
+                        <img [src]="items.src" [class]="items.clipType" [class.white]="items.playerType == 'w'" />
                     </div>
                 </ng-container>
             </div>
-            <button *ngIf="i==7" (click)="undo()" [disabled]="disableBtn" class="btn btn-primary mt-4">UNDO</button>
         </ng-container>
+        <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button>
     </div>
     <!-- board area  -->
 
     <p>{{turn}}{{refresh}}</p>
     <div class="connect" *ngIf="!(remoteConnectionStatus||offerConnectionStatus)">
         <button (click)="initRtc()">create offer</button>
-        <input placeholder="offer here" (change)="saveRemoteOffer($event)" type="text">
-        <button (click)="generateAnswer()">generate anser</button>
-        <input placeholder="answer here" (change)="saveRemoteAnswer($event)" type="text">
-        <button (click)="localConnect()">connect</button>
-        <p>{{'offer:'}} {{offer}}</p>
-        <p>{{"answer:"}} {{answer|json}}</p>
+        <!-- <input placeholder="offer here" (change)="saveRemoteOffer($event)" type="text">
+        <button (click)="generateAnswer()">generate anser</button> -->
+        <ng-container *ngIf="offer">
+            <input placeholder="answer here" (change)="saveRemoteAnswer($event)" type="text">
+            <button (click)="localConnect()">connect</button>
+        </ng-container>
+        <a [href]="offer" target="_blank">{{offer}}</a>
+        <a>{{"answer:"}} {{answer|json}}</a>
     </div>
 
-    <!-- <div *ngIf="offerConnectionStatus" class="messages"> -->
+    <div *ngIf="offerConnectionStatus" class="messages">
         <button (click)="offerChannelSender()">offer sender</button>
-    <!-- </div> -->
-    <!-- <div *ngIf="remoteConnectionStatus" class="messages"> -->
+    </div>
+    <div *ngIf="remoteConnectionStatus" class="messages">
         <button (click)="remoteChannelSender()">remote sender</button>
-    <!-- </div> -->
+    </div>
     <button (click)="closeConnection()">close</button>
 </div>

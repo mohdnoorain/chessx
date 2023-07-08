@@ -3,41 +3,69 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    .r-1 {
+
+    .row {
         display: flex;
         width: 560px;
-        // border:1px solid green;
         user-select: none;
 
-        .bbox.bg-dark {
-            background-color: #fafafa;
-
-            &:hover {
-                box-shadow: 0px 0px 10px 12px #fafafa;
-                z-index: 100000000000;
-                border: 2px solid black;
-            }
-        }
-
-        .bbox {
-            // flex-grow: 1;
-            border-radius: 0% !important;
+        .col {
+            height: 70px;
+            width: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: rgb(247, 247, 247);
 
             &:hover {
-                z-index: 100000000000;
-                box-shadow: 0px 0px 15px 10px #40f7fd;
                 border: 2px solid black;
+            }
+
+            &.bg-dark {
+                background-color: rgb(51, 248, 255) !important;
+            }
+
+            img {
+                height: 100%;
+
+                //black white
+                &.white {
+                    filter: invert(1);
+                }
+
+                //clipping classes
+                &.clip-pawn {
+                    clip-path: polygon(15% 45%, 85% 45%, 100% 100%, 0% 100%, 10% 80%);
+                }
+
+                &.clip-king {
+                    clip-path: polygon(20% 1%, 80% 1%, 100% 100%, 0% 100%);
+                }
+
+                &.clip-queen {
+                    clip-path: polygon(20% 9%, 80% 9%, 100% 100%, 0% 100%);
+                }
+
+                &.clip-camel {
+                    clip-path: polygon(20% 20%, 80% 20%, 100% 100%, 0% 100%);
+                }
+
+                &.clip-horse {
+                    clip-path: polygon(0% 23%, 100% 23%, 100% 100%, 0% 100%);
+                }
+
+                &.clip-ele {
+                    clip-path: polygon(17% 33%, 83% 33%, 100% 100%, 0% 100%);
+                }
             }
         }
 
-        .select {
-            border: 2px dashed black;
-            box-shadow: 0px 0px 8px 5px #94f5f8;
+        .selected {
+            border: 2px dashed black !important;
         }
 
         .moveOpt {
-            border: 2px solid rgb(94, 93, 93);
+            border: 1px solid rgb(0, 0, 0);
         }
 
         .kingCheck {
@@ -45,67 +73,18 @@
             z-index: 100000;
             box-shadow: 0px 0px 3px 3px red;
         }
-
-        .bg-dark {
-            background-color: rgb(51, 248, 255) !important;
-        }
-
-        .col-1 {
-            // border: 1px solid red;
-            height: 70px;
-            width: 70px;
-            // padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            img {
-                max-height: 100%;
-            }
-
-            //black white
-            .whiteP {
-                filter: invert(1);
-            }
-
-
-            //clipping classes
-            .clip-pawn {
-                clip-path: polygon(15% 45%, 85% 45%, 100% 100%, 0% 100%, 10% 80%);
-                // clip-path: polygon(68% 48%, 88% 68%, 80% 79%, 100% 88%, 100% 100%, 50% 100%, 0 100%, 22% 79%, 13% 68%, 33% 48%);
-            }
-
-            .clip-king {
-                clip-path: polygon(20% 1%, 80% 1%, 100% 100%, 0% 100%);
-            }
-
-            .clip-queen {
-                clip-path: polygon(20% 9%, 80% 9%, 100% 100%, 0% 100%);
-            }
-
-            .clip-camel {
-                clip-path: polygon(20% 20%, 80% 20%, 100% 100%, 0% 100%);
-            }
-
-            .clip-horse {
-                clip-path: polygon(0% 23%, 100% 23%, 100% 100%, 0% 100%);
-            }
-
-            .clip-ele {
-                clip-path: polygon(17% 33%, 83% 33%, 100% 100%, 0% 100%);
-            }
-        }
     }
 
     .connect {
         display: flex;
         flex-direction: column;
         align-items: center;
-        p{
-            width: 200px;
+
+        a {
+            max-width: 800px;
             border: 2px solid red;
-            // word-wrap: break-word;
-            overflow: scroll;
+            word-wrap: break-word;
+            // overflow: scroll;
         }
     }
 }
