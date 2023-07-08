@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-default',
@@ -6,7 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./default.component.scss']
 })
 export class DefaultComponent implements OnInit {
+  @ViewChild('hhh') hhh: ElementRef<HTMLButtonElement> | null = null;
 
+  refresh = 0;
+  client = 'offer'
+  refreshP() { this.refresh += 1 }
   bp: string = "../../.../../../../assets/black/blackpawn.jpg";
   bk: string = "../../.../../../../assets/black/blackking.jpg";
   bq: string = "../../.../../../../assets/black/blackqueen.jpg";
@@ -112,12 +117,225 @@ export class DefaultComponent implements OnInit {
       { src: this.be, playerC: true, clipType: "clip-ele", addCls: "", imgT: "w" },
     ]
   ];
-
   lstInd: any = [-1, 0];
 
-  constructor() { }
 
+  ///
+
+  offerConnectionStatus = false;
+  remoteConnectionStatus = false;
+
+  offer: string = '';
+  remoteOffer: RTCSessionDescriptionInit | null = null;
+  answer: any | null = null;
+  remoteAnswer: any | null = null;
+
+  offerChannel: RTCDataChannel | null = null;
+  remoteChannel: RTCDataChannel | null = null;
+
+  remoteConnection: RTCPeerConnection | null = null;
+  localConnection: RTCPeerConnection | null = null;
+
+
+  constructor(private route: ActivatedRoute) {
+    let c = this.route.snapshot.queryParamMap.get('client')
+    let o = this.route.snapshot.queryParamMap.get('offer')
+    console.log(o)
+    if (c == 'remote' && o) {
+      this.client = c
+      try {
+        o = atob(o)
+        console.log(o)
+        this.remoteOffer = JSON.parse(o)
+        this.generateAnswer()
+      } catch {
+        alert('invalid url p')
+      }
+      console.log(this.remoteOffer)
+    } else if (c == 'offer') {
+
+    } else {
+    }
+  }
   ngOnInit(): void {
+  }
+
+  ngOnDestroy(): void {
+    this.closeConnection()
+  }
+
+  saveRemoteOffer(res: any) {
+    console.log('saved offer')
+    this.remoteOffer = JSON.parse(res.target.value)
+  }
+
+  saveRemoteAnswer(res: any) {
+    console.log('saved answer')
+    this.remoteAnswer = JSON.parse(res.target.value)
+  }
+
+  // step 1 L
+  initRtc() {
+    this.localConnection = new RTCPeerConnection()
+    this.setUpLocalChannel()
+
+    this.localConnection.onicecandidate = (a) => {
+      if (this.localConnection) {
+        let offerObj = JSON.stringify(this.localConnection.localDescription);
+        console.log(offerObj);
+        let o = btoa(offerObj)
+
+        this.offer = 'http://localhost:4200/board/default?client=remote&offer=' + o
+      } else {
+        throw new Error("unable to save localDescription on localConnection :=> initRtc > onicecandidate")
+      }
+      this.hhh?.nativeElement.click()
+    }
+
+    this.localConnection.createOffer().then((o: RTCSessionDescriptionInit) => {
+      if (this.localConnection) {
+        this.localConnection.setLocalDescription(o).then((a: any) => {
+          console.log("localConnection LocalDescription set")
+        }).catch((re: any) => {
+          console.log(re)
+        })
+      } else {
+        throw new Error("unable to set localDescription on localConnection :=> initRtc > createOffer")
+      }
+    }).catch((re: any) => { console.log(re) }).then(() => {
+      console.log('done');
+    })
+  }
+
+  // step 2 L
+  setUpLocalChannel() {
+    if (this.localConnection) {
+      this.offerChannel = this.localConnection.createDataChannel("dataChannel");
+
+      this.offerChannel.onmessage = (e: any) => {
+        if (e?.data) {
+          let data = JSON.parse(e?.data);
+          this.turn = data.turn
+          this.boardArray = data.arr
+        } else {
+          throw new Error("unable to read data onmessage on localConnection :=> setUpLocalChannel > onmessage ")
+        }
+        this.hhh?.nativeElement.click()
+      }
+
+      this.offerChannel.onopen = (a) => {
+        console.log("open!!!!")
+        this.offerConnectionStatus = true;
+        this.hhh?.nativeElement.click();
+      };
+
+      this.offerChannel.onclose = (a) => {
+        console.log("closed!!!!!!")
+        this.offerConnectionStatus = false;
+      };
+    } else {
+      throw new Error("unable to setUpLocalChannel on localConnection :=> setUpLocalChannel")
+    }
+  }
+
+  // step 3 R
+  generateAnswer() {
+    this.remoteConnection = new RTCPeerConnection()
+    this.setUpRemoteChannel()
+
+    this.remoteConnection.onicecandidate = (a) => {
+      if (this.remoteConnection) {
+        this.answer = this.remoteConnection.localDescription;
+      } else {
+        throw new Error("unable to save localDescription on remoteConnection :=> generateAnswer > onicecandidate")
+      }
+      this.hhh?.nativeElement.click()
+    }
+
+    if (this.remoteOffer) {
+      this.remoteConnection.setRemoteDescription(this.remoteOffer).then((a: any) => {
+        console.log("remoteConnection RemoteDescription set 3")
+      }).catch((re: any) => {
+        console.log(re)
+      })
+
+      this.remoteConnection.createAnswer().then((a: any) => {
+        this.remoteConnection?.setLocalDescription(a).then((a: any) => {
+          console.log("remoteConnection setLocalDescription set 3")
+        }).catch((re: any) => {
+          console.log(re)
+        })
+      }).then(() => { console.log('answer created 3') }).catch((re: any) => {
+        console.log(re)
+      })
+    } else {
+      alert('offer not set')
+    }
+  }
+
+  // step 4 R
+  setUpRemoteChannel() {
+    if (this.remoteConnection) {
+      this.remoteConnection.ondatachannel = (e: RTCDataChannelEvent) => {
+        this.remoteChannel = e.channel;
+
+        this.remoteChannel.onmessage = (e: any) => {
+          if (e.data) {
+            let data = JSON.parse(e.data);
+            this.turn = data.turn
+            this.boardArray = data.arr
+          } else {
+            throw new Error("unable to read data onmessage on remoteConnection :=> setUpRemoteChannel > onmessage ")
+          }
+          this.hhh?.nativeElement.click()
+        }
+
+        this.remoteChannel.onopen = (a) => {
+          console.log("open!!!!")
+          this.remoteConnectionStatus = true;
+          this.hhh?.nativeElement.click();
+        };
+
+        this.remoteChannel.onclose = (a) => {
+          console.log("closed!!!!!!")
+          this.remoteConnectionStatus = false;
+        };
+      }
+    } else {
+      throw new Error("unable to setUpRemoteChannel on remoteConnection :=> setUpRemoteChannel")
+    }
+  }
+
+  //final step 5 L
+  localConnect() {
+    this.localConnection?.setRemoteDescription(this.remoteAnswer).then(() => {
+      console.log("connection in progress")
+    }).catch((re: any) => {
+      console.log(re)
+    })
+  }
+  // all set 
+
+  // send from local 
+  offerChannelSender() {
+    this.offerChannel?.send(JSON.stringify({
+      turn: this.turn,
+      arr: this.boardArray
+    }))
+  }
+
+  // send from remote 
+  remoteChannelSender() {
+    this.remoteChannel?.send(JSON.stringify({
+      turn: this.turn,
+      arr: this.boardArray
+    }))
+  }
+
+  // close
+  closeConnection() {
+    this.remoteConnection?.close()
+    this.localConnection?.close()
   }
 
   move(i: any, j: any): any {
@@ -206,7 +424,6 @@ export class DefaultComponent implements OnInit {
         if (this.boardArray[x][y].src == this.bk && this.boardArray[x][y].imgT == this.turn)
           if (kingChk)
             this.boardArray[x][y].addCls = "kingCheck";
-            alert('check')
       }
     }
   }
@@ -536,3 +753,7 @@ export class DefaultComponent implements OnInit {
   }
 
 }
+function resolve(resolve: (value: unknown) => void, reject: (reason?: any) => void): void {
+  throw new Error('Function not implemented.');
+}
+

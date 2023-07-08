@@ -1,23 +1,37 @@
 <div class="container">
-    <ng-container *ngFor="let row of boardArray; index as i;">
-        <div class="row r-1 bg-mutd text-center">
+    <button style="visibility: hidden;" #hhh (click)="refreshP()"></button>
+    <!-- board area  -->
+    <div *ngIf="(remoteConnectionStatus||offerConnectionStatus)">
+        <ng-container *ngFor="let row of boardArray; index as i;">
+            <div class="row r-1 bg-mutd text-center">
+                <ng-container *ngFor="let items of row; index as j;">
+                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col-1 bbox"
+                        [class.bg-dark]="(i+j)%2">
+                        <img [src]="items.src" [class]="items.clipType" [class.whiteP]="items.playerC" />
+                    </div>
+                </ng-container>
+            </div>
+            <button *ngIf="i==7" (click)="undo()" [disabled]="disableBtn" class="btn btn-primary mt-4">UNDO</button>
+        </ng-container>
+    </div>
+    <!-- board area  -->
 
-            <!-- <div class="col-1 "></div>
-            <div class="col-1 "></div> -->
+    <p>{{turn}}{{refresh}}</p>
+    <div class="connect" *ngIf="!(remoteConnectionStatus||offerConnectionStatus)">
+        <button (click)="initRtc()">create offer</button>
+        <input placeholder="offer here" (change)="saveRemoteOffer($event)" type="text">
+        <button (click)="generateAnswer()">generate anser</button>
+        <input placeholder="answer here" (change)="saveRemoteAnswer($event)" type="text">
+        <button (click)="localConnect()">connect</button>
+        <p>{{'offer:'}} {{offer}}</p>
+        <p>{{"answer:"}} {{answer|json}}</p>
+    </div>
 
-            <ng-container *ngFor="let items of row; index as j;">
-                <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col-1 bbox"
-                    [class.bg-dark]="(i+j)%2">
-                    <img [src]="items.src" [class]="items.clipType" [class.whiteP]="items.playerC"/>
-                </div>
-            </ng-container>
-
-            <!-- <div class="col-1 "></div>
-            <div class="col-1 ">
-                <button *ngIf="i==7" (click)="undo()" [disabled]="disableBtn" class="btn btn-primary mt-4">UNDO</button>
-            </div> -->
-
-        </div>
-    </ng-container>
-
+    <!-- <div *ngIf="offerConnectionStatus" class="messages"> -->
+        <button (click)="offerChannelSender()">offer sender</button>
+    <!-- </div> -->
+    <!-- <div *ngIf="remoteConnectionStatus" class="messages"> -->
+        <button (click)="remoteChannelSender()">remote sender</button>
+    <!-- </div> -->
+    <button (click)="closeConnection()">close</button>
 </div>
