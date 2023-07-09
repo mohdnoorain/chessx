@@ -248,8 +248,8 @@ export class DefaultComponent implements OnInit {
   disableUndoBtn: any = true;
   turn: string = "w";
   nextTurn: string = "b";
-  chngPawn = false;
-  isKCheck = false;
+  updatePawn = false;
+  isKingCheckeded = false;
 
   recover: any = {
     i: -1,
@@ -342,7 +342,7 @@ export class DefaultComponent implements OnInit {
     ]
   ];
 
-  lastClickedPosition: any = [-1, 0];
+  lastClickedPosition: number[] = [-1, 0];
   saveLastClickedPosition(i: number, j: number) {
     this.lastClickedPosition[0] = i;
     this.lastClickedPosition[1] = j;
@@ -357,87 +357,104 @@ export class DefaultComponent implements OnInit {
   removeAddCls(i: number, j: number) {
     this.boardArray[i][j].addCls = "";
   }
-
-  move(clickedPositionI: number, clickedPositionJ: number): any {
-    if (this.checkTurnNselectedPiece(clickedPositionI, clickedPositionJ)) {
-
-      if (this.lastClickedPosition[0] == -1) {
-        this.disableUndoBtn = true;
-      } else {
-        this.removeAddCls(this.lastClickedPosition[0], this.lastClickedPosition[1]);
-        this.markKingChk(this.isKCheck);
+  //conditions 1///
+  checkTurnNselectedPiece(i: number, j: number): boolean {
+    return this.turn == this.boardArray[i][j].playerType
+  }
+  //conditions 2///
+  canMove(i: number, j: number): boolean {
+    return this.boardArray[i][j].addCls == "moveOpt"
+  }
+  savePieceToRecoveryObj(i: number, j: number) {
+    this.recover.obj.src = this.boardArray[i][j].src;
+    this.recover.obj.playerType = this.boardArray[i][j].playerType;
+    this.recover.obj.pieceType = this.boardArray[i][j].pieceType;
+    this.recover.obj.addCls = this.boardArray[i][j].addCls;
+  }
+  savePositionsToRecoveryObj(i: number, j: number, k: number, l: number) {
+    this.recover.i = i;
+    this.recover.j = j;
+    this.recover.k = k;
+    this.recover.l = l;
+  }
+  clearAllMoves(clearCheck: boolean = false) {
+    let cls = clearCheck ? "" : "kingChecked"
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        this.boardArray[i][j].addCls =
+          (this.boardArray[i][j].addCls == "selected" || this.boardArray[i][j].addCls == cls)
+            ? this.boardArray[i][j].addCls : "";
       }
-      this.saveLastClickedPosition(clickedPositionI, clickedPositionJ);
-      this.markPossibleMoves(clickedPositionI, clickedPositionJ);
-      this.markPieceSelected(clickedPositionI, clickedPositionJ);
-
-    }
-    else if (this.boardArray[clickedPositionI][clickedPositionJ].addCls == "moveOpt") {
-      let lastClickedPositioI = this.lastClickedPosition[0];
-      let lastClickedPositioJ = this.lastClickedPosition[1];
-
-      this.isKCheck = false;
-      this.removeAddCls(clickedPositionI, clickedPositionJ);
-      this.removeAddCls(lastClickedPositioI, lastClickedPositioJ);
-      this.recover.obj.src = this.boardArray[clickedPositionI][clickedPositionJ].src;
-      // this.recover.obj.playerC = this.boardArray[i][j].playerC; Depricated
-      this.recover.obj.playerType = this.boardArray[clickedPositionI][clickedPositionJ].playerType;
-      this.recover.obj.pieceType = this.boardArray[clickedPositionI][clickedPositionJ].pieceType;
-      this.recover.obj.addCls = this.boardArray[clickedPositionI][clickedPositionJ].addCls;
-
-      this.swip(clickedPositionI, clickedPositionJ, lastClickedPositioI, lastClickedPositioJ);
-
-      if (this.chngPawn) {
-        this.chngPawn = false;
-        if (this.turn == "w") {
-          this.fill(clickedPositionI, clickedPositionJ, this.whiteQueenObj);
-        } else
-          this.fill(clickedPositionI, clickedPositionJ, this.blackQueenObj);
-      }
-
-      this.fill(lastClickedPositioI, lastClickedPositioJ);
-      // saving last positions
-      this.recover.i = clickedPositionI;
-      this.recover.j = clickedPositionJ;
-      this.recover.k = lastClickedPositioI;
-      this.recover.l = lastClickedPositioJ;
-      this.resetLastClickedPosition()
-      this.clearAllMoves(true);
-      this.disableUndoBtn = false;
-      this.turn = (this.turn == "w") ? "b" : "w";
-      this.nextTurn = (this.nextTurn == "w") ? "b" : "w";
-      this.findKIng();
-
-
-
     }
   }
-
-  swip(i: number, j: number, k: number, l: number) {
+  changeTurn() {
+    this.turn = this.turn == "w" ? "b" : "w";
+    this.nextTurn = this.nextTurn == "w" ? "b" : "w";
+  }
+  moveSelectedPiece(i: number, j: number, k: number, l: number) {
     this.boardArray[i][j].src = this.boardArray[k][l].src;
-    // this.boardArray[i][j].playerC = this.boardArray[k][l].playerC; Depricated
     this.boardArray[i][j].playerType = this.boardArray[k][l].playerType;
     this.boardArray[i][j].pieceType = this.boardArray[k][l].pieceType;
     this.boardArray[i][j].addCls = this.boardArray[k][l].addCls;
   }
-
-  fill(i: number, j: number, obj: any = this.empObj) {
+  fillWith(i: number, j: number, obj: any) {
     this.boardArray[i][j].src = obj.src;
-    // this.boardArray[i][j].playerC = obj.playerC; Depricated
     this.boardArray[i][j].playerType = obj.playerType;
     this.boardArray[i][j].pieceType = obj.pieceType;
     this.boardArray[i][j].addCls = obj.addCls;
   }
-
-  markKingChk(kingChk: any) {
+  markKingChecked() {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         if (this.boardArray[x][y].src == this.bk && this.boardArray[x][y].playerType == this.turn)
-          if (kingChk)
-            this.boardArray[x][y].addCls = "queenCheck";
+          this.boardArray[x][y].addCls = "kingChecked";
       }
     }
   }
+      //^\\
+  //////|\\\\\\ checked and refactored
+  move(clickedPositionI: number, clickedPositionJ: number): any {
+    if (this.checkTurnNselectedPiece(clickedPositionI, clickedPositionJ)) {
+      if (this.lastClickedPosition[0] == -1) {
+        this.disableUndoBtn = true;
+      } else {
+        this.removeAddCls(this.lastClickedPosition[0], this.lastClickedPosition[1]);
+        this.isKingCheckeded && this.markKingChecked();
+      }
+      this.saveLastClickedPosition(clickedPositionI, clickedPositionJ);
+      this.markPossibleMoves(clickedPositionI, clickedPositionJ);
+      this.markPieceSelected(clickedPositionI, clickedPositionJ);
+    }
+    else if (this.canMove(clickedPositionI, clickedPositionJ)) {
+      let lastClickedPositioI = this.lastClickedPosition[0];
+      let lastClickedPositioJ = this.lastClickedPosition[1];
+      this.isKingCheckeded = false;
+      this.removeAddCls(clickedPositionI, clickedPositionJ);
+      this.removeAddCls(lastClickedPositioI, lastClickedPositioJ);
+      this.savePieceToRecoveryObj(clickedPositionI, clickedPositionJ);
+      this.moveSelectedPiece(clickedPositionI, clickedPositionJ, lastClickedPositioI, lastClickedPositioJ);
+
+      // UpgratePieceType
+      if (this.updatePawn) {
+        this.updatePawn = false;
+        if (this.turn == "w") {
+          this.fillWith(clickedPositionI, clickedPositionJ, this.whiteQueenObj);
+        } else
+          this.fillWith(clickedPositionI, clickedPositionJ, this.blackQueenObj);
+      }
+      // UpgratePieceType
+
+      this.fillWith(lastClickedPositioI, lastClickedPositioJ, this.empObj);
+      this.savePositionsToRecoveryObj(clickedPositionI, clickedPositionJ, lastClickedPositioI, lastClickedPositioJ);
+      this.resetLastClickedPosition()
+      this.clearAllMoves(true);
+      this.disableUndoBtn = false;
+      this.changeTurn();
+      this.findKIng();
+    }
+  }
+
+  // to be checked and refactored
 
   findKIng() {
     let i = -1, j = -1;
@@ -450,50 +467,50 @@ export class DefaultComponent implements OnInit {
       }
     }
     this.ckhKing(i, j, 1, 1, -1, this.bc, this.bq)
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 1, -1, -1, this.bc, this.bq);
 
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -1, 1, -1, this.bc, this.bq);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -1, -1, -1, this.bc, this.bq);
 
     if (this.turn == 'w') {
-      if (this.boardArray[i][j].addCls != "queenCheck")
+      if (this.boardArray[i][j].addCls != "kingChecked")
         this.ckhKing(i, j, -1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "queenCheck")
+      if (this.boardArray[i][j].addCls != "kingChecked")
         this.ckhKing(i, j, -1, -1, 1, this.bp);
     } else {
-      if (this.boardArray[i][j].addCls != "queenCheck")
+      if (this.boardArray[i][j].addCls != "kingChecked")
         this.ckhKing(i, j, 1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "queenCheck")
+      if (this.boardArray[i][j].addCls != "kingChecked")
         this.ckhKing(i, j, 1, -1, 1, this.bp);
     }
 
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 1, 2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -1, 2, 1, this.bh);
 
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 0, -1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 0, 1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, 1, 0, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "queenCheck")
+    if (this.boardArray[i][j].addCls != "kingChecked")
       this.ckhKing(i, j, -1, 0, -1, this.be, this.bq);
   }
 
@@ -501,7 +518,7 @@ export class DefaultComponent implements OnInit {
     let ind = 1;
     while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
       if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor[0] || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor?.[1]) {
-        this.boardArray[i][j].addCls = "queenCheck"; this.isKCheck = true;
+        this.boardArray[i][j].addCls = "kingChecked"; this.isKingCheckeded = true;
       } else if (!(this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e")) {
         break;
       }
@@ -510,22 +527,6 @@ export class DefaultComponent implements OnInit {
         break;
       }
       ind++;
-    }
-  }
-  //conditions 1///
-  checkTurnNselectedPiece(i: number, j: number): any {
-    return this.turn == this.boardArray[i][j].playerType
-  }
-
-  // clesrrr
-  clearAllMoves(clearCheck: boolean = false) {
-    let cls = clearCheck ? "" : "queenCheck"
-    for (let i = 0; i < 8; i++) {
-      for (let j = 0; j < 8; j++) {
-        this.boardArray[i][j].addCls =
-          (this.boardArray[i][j].addCls == "selected" || this.boardArray[i][j].addCls == cls)
-            ? this.boardArray[i][j].addCls : "";
-      }
     }
   }
 
@@ -539,7 +540,7 @@ export class DefaultComponent implements OnInit {
       if (this.boardArray[i + steps]?.[j]?.playerType == "e") {
         if (!this.dhundo((i + steps), (j), i, j)) {
           this.boardArray[i + steps][j].addCls = "moveOpt";
-          if (i + steps == 0 || i + steps == 7) { this.chngPawn = true; } else { this.chngPawn = false; }
+          if (i + steps == 0 || i + steps == 7) { this.updatePawn = true; } else { this.updatePawn = false; }
         }
         if ((i == 1 && this.turn == "b") || (i == 6 && this.turn == "w")) {
           if (this.boardArray[i + (steps * 2)][j].playerType == "e") {
@@ -552,13 +553,13 @@ export class DefaultComponent implements OnInit {
       if (this.boardArray[i + steps]?.[j + 1]?.playerType == this.nextTurn) {
         if (!this.dhundo((i + steps), (j + 1), i, j)) {
           this.boardArray[i + steps][j + 1].addCls = "moveOpt";
-          if (i + steps == 0 || i + steps == 7) { this.chngPawn = true; } else { this.chngPawn = false; }
+          if (i + steps == 0 || i + steps == 7) { this.updatePawn = true; } else { this.updatePawn = false; }
         }
       }
       if (this.boardArray[i + steps]?.[j - 1]?.playerType == this.nextTurn) {
         if (!this.dhundo((i + steps), (j - 1), i, j)) {
           this.boardArray[i + steps][j - 1].addCls = "moveOpt";
-          if (i + steps == 0 || i + steps == 7) { this.chngPawn = true; } else { this.chngPawn = false; }
+          if (i + steps == 0 || i + steps == 7) { this.updatePawn = true; } else { this.updatePawn = false; }
         }
       }
     }
@@ -719,15 +720,12 @@ export class DefaultComponent implements OnInit {
 
     }
   }
-  /////undo//////
+  /////undo////// undo update pawn to fix 
   undo() {
-
     this.clearAllMoves();
-    this.swip(this.recover.k, this.recover.l, this.recover.i, this.recover.j);
-    this.fill(this.recover.i, this.recover.j, this.recover.obj);
-
-    this.turn = (this.turn == "w") ? "b" : "w";
-    this.nextTurn = (this.nextTurn == "w") ? "b" : "w";
+    this.moveSelectedPiece(this.recover.k, this.recover.l, this.recover.i, this.recover.j);
+    this.fillWith(this.recover.i, this.recover.j, this.recover.obj);
+    this.changeTurn()
     this.disableUndoBtn = true;
     this.resetLastClickedPosition()
     this.findKIng();
