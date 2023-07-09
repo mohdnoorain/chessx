@@ -75,6 +75,8 @@ export class DefaultComponent implements OnInit {
         let offerObj = JSON.stringify(this.localConnection.localDescription);
         offerObj = btoa(offerObj)
         this.offer = 'http://localhost:4200/board/default?client=remote&offer=' + offerObj
+        console.log(this.offer);
+
       } else {
         throw new Error("unable to save localDescription on localConnection :=> initRtc > onicecandidate")
       }
@@ -240,9 +242,9 @@ export class DefaultComponent implements OnInit {
   bh: string = "assets/black/blackhorse.jpg";
   be: string = "assets/black/blackele.jpg";
   em: string = "";
-  empObj = { src: "", clipType: "noClip", addCls: "", playerType: "e" };
-  blackQueenObj = { src: this.bq, clipType: "clip-queen", addCls: "", playerType: "b" };
-  whiteQueenObj = { src: this.bq, clipType: "clip-queen", addCls: "", playerType: "w" };
+  empObj = { src: "", pieceType: "", addCls: "", playerType: "e" };
+  blackQueenObj = { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" };
+  whiteQueenObj = { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" };
   disableUndoBtn: any = true;
   turn: string = "w";
   nextTurn: string = "b";
@@ -254,168 +256,176 @@ export class DefaultComponent implements OnInit {
     j: -1,
     k: -1,
     l: -1,
-    obj: { src: "", clipType: "", addCls: "", playerType: "" }
+    obj: { src: "", pieceType: "", addCls: "", playerType: "" }
   };
 
   boardArray = [
     [
-      { src: this.be, clipType: "clip-ele", addCls: "", playerType: "b" },
-      { src: this.bh, clipType: "clip-horse", addCls: "", playerType: "b" },
-      { src: this.bc, clipType: "clip-camel", addCls: "", playerType: "b" },
-      { src: this.bk, clipType: "clip-king", addCls: "", playerType: "b" },
-      { src: this.bq, clipType: "clip-queen", addCls: "", playerType: "b" },
-      { src: this.bc, clipType: "clip-camel", addCls: "", playerType: "b" },
-      { src: this.bh, clipType: "clip-horse", addCls: "", playerType: "b" },
-      { src: this.be, clipType: "clip-ele", addCls: "", playerType: "b" },
+      { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
+      { src: this.bh, pieceType: "horse", addCls: "", playerType: "b" },
+      { src: this.bc, pieceType: "camel", addCls: "", playerType: "b" },
+      { src: this.bk, pieceType: "king", addCls: "", playerType: "b" },
+      { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" },
+      { src: this.bc, pieceType: "camel", addCls: "", playerType: "b" },
+      { src: this.bh, pieceType: "horse", addCls: "", playerType: "b" },
+      { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
     ],
     [
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
     ],
     [
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
     ],
     [
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
     ],
     [
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
     ],
     [
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
-      { src: "", clipType: "noClip", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
+      { src: "", pieceType: "", addCls: "", playerType: "e" },
     ],
     [
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
-      { src: this.bp, clipType: "clip-pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
     ],
     [
-      { src: this.be, clipType: "clip-ele", addCls: "", playerType: "w" },
-      { src: this.bh, clipType: "clip-horse", addCls: "", playerType: "w" },
-      { src: this.bc, clipType: "clip-camel", addCls: "", playerType: "w" },
-      { src: this.bk, clipType: "clip-king", addCls: "", playerType: "w" },
-      { src: this.bq, clipType: "clip-queen", addCls: "", playerType: "w" },
-      { src: this.bc, clipType: "clip-camel", addCls: "", playerType: "w" },
-      { src: this.bh, clipType: "clip-horse", addCls: "", playerType: "w" },
-      { src: this.be, clipType: "clip-ele", addCls: "", playerType: "w" },
+      { src: this.be, pieceType: "ele", addCls: "", playerType: "w" },
+      { src: this.bh, pieceType: "horse", addCls: "", playerType: "w" },
+      { src: this.bc, pieceType: "camel", addCls: "", playerType: "w" },
+      { src: this.bk, pieceType: "king", addCls: "", playerType: "w" },
+      { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" },
+      { src: this.bc, pieceType: "camel", addCls: "", playerType: "w" },
+      { src: this.bh, pieceType: "horse", addCls: "", playerType: "w" },
+      { src: this.be, pieceType: "ele", addCls: "", playerType: "w" },
     ]
   ];
 
-  lstInd: any = [-1, 0];
+  lastClickedPosition: any = [-1, 0];
+  saveLastClickedPosition(i: number, j: number) {
+    this.lastClickedPosition[0] = i;
+    this.lastClickedPosition[1] = j;
+  }
+  resetLastClickedPosition() {
+    this.lastClickedPosition[0] = -1;
+    this.lastClickedPosition[1] = 0;
+  }
+  markPieceSelected(i: number, j: number) {
+    this.boardArray[i][j].addCls = "selected";
+  }
+  removeAddCls(i: number, j: number) {
+    this.boardArray[i][j].addCls = "";
+  }
 
-  move(i: any, j: any): any {
-    if (this.lstInd[0] == -1) {
+  move(clickedPositionI: number, clickedPositionJ: number): any {
+    if (this.checkTurnNselectedPiece(clickedPositionI, clickedPositionJ)) {
 
-      if (this.checkTurnNselectedPiece(i, j)) {
-        this.lstInd[0] = i;
-        this.lstInd[1] = j;
-        this.optionsFP(i, j);
-        this.boardArray[i][j].addCls = "selected";
+      if (this.lastClickedPosition[0] == -1) {
         this.disableUndoBtn = true;
       } else {
-        return false;
+        this.removeAddCls(this.lastClickedPosition[0], this.lastClickedPosition[1]);
+        this.markKingChk(this.isKCheck);
       }
+      this.saveLastClickedPosition(clickedPositionI, clickedPositionJ);
+      this.markPossibleMoves(clickedPositionI, clickedPositionJ);
+      this.markPieceSelected(clickedPositionI, clickedPositionJ);
 
     }
-    else {
+    else if (this.boardArray[clickedPositionI][clickedPositionJ].addCls == "moveOpt") {
+      let lastClickedPositioI = this.lastClickedPosition[0];
+      let lastClickedPositioJ = this.lastClickedPosition[1];
 
-      let k = this.lstInd[0];
-      let l = this.lstInd[1];
+      this.isKCheck = false;
+      this.removeAddCls(clickedPositionI, clickedPositionJ);
+      this.removeAddCls(lastClickedPositioI, lastClickedPositioJ);
+      this.recover.obj.src = this.boardArray[clickedPositionI][clickedPositionJ].src;
+      // this.recover.obj.playerC = this.boardArray[i][j].playerC; Depricated
+      this.recover.obj.playerType = this.boardArray[clickedPositionI][clickedPositionJ].playerType;
+      this.recover.obj.pieceType = this.boardArray[clickedPositionI][clickedPositionJ].pieceType;
+      this.recover.obj.addCls = this.boardArray[clickedPositionI][clickedPositionJ].addCls;
 
-      if (this.cond2(i, j, k, l)) {
+      this.swip(clickedPositionI, clickedPositionJ, lastClickedPositioI, lastClickedPositioJ);
 
-        if (this.boardArray[i][j].addCls == "moveOpt") {
-          this.isKCheck = false;
-          this.boardArray[i][j].addCls = "";
-          this.boardArray[k][l].addCls = "";
-          this.recover.obj.src = this.boardArray[i][j].src;
-          // this.recover.obj.playerC = this.boardArray[i][j].playerC; Depricated
-          this.recover.obj.playerType = this.boardArray[i][j].playerType;
-          this.recover.obj.clipType = this.boardArray[i][j].clipType;
-          this.recover.obj.addCls = this.boardArray[i][j].addCls;
-
-          this.swip(i, j, k, l);
-
-          if (this.chngPawn) {
-            this.chngPawn = false;
-            if (this.turn == "w") {
-              this.fill(i, j, this.whiteQueenObj);
-            } else
-              this.fill(i, j, this.blackQueenObj);
-
-          }
-
-          this.fill(k, l);
-          // saving last positions
-          this.recover.i = i;
-          this.recover.j = j;
-          this.recover.k = k;
-          this.recover.l = l;
-          this.lstInd[0] = -1;
-          this.clearOpt();
-          this.disableUndoBtn = false;
-          this.turn = (this.turn == "w") ? "b" : "w";
-          this.nextTurn = (this.nextTurn == "w") ? "b" : "w";
-          this.findKIng();
-
-        }
+      if (this.chngPawn) {
+        this.chngPawn = false;
+        if (this.turn == "w") {
+          this.fill(clickedPositionI, clickedPositionJ, this.whiteQueenObj);
+        } else
+          this.fill(clickedPositionI, clickedPositionJ, this.blackQueenObj);
       }
+
+      this.fill(lastClickedPositioI, lastClickedPositioJ);
+      // saving last positions
+      this.recover.i = clickedPositionI;
+      this.recover.j = clickedPositionJ;
+      this.recover.k = lastClickedPositioI;
+      this.recover.l = lastClickedPositioJ;
+      this.resetLastClickedPosition()
+      this.clearAllMoves(true);
+      this.disableUndoBtn = false;
+      this.turn = (this.turn == "w") ? "b" : "w";
+      this.nextTurn = (this.nextTurn == "w") ? "b" : "w";
+      this.findKIng();
+
+
 
     }
   }
 
-  swip(i: any, j: any, k: any, l: any) {
+  swip(i: number, j: number, k: number, l: number) {
     this.boardArray[i][j].src = this.boardArray[k][l].src;
     // this.boardArray[i][j].playerC = this.boardArray[k][l].playerC; Depricated
     this.boardArray[i][j].playerType = this.boardArray[k][l].playerType;
-    this.boardArray[i][j].clipType = this.boardArray[k][l].clipType;
+    this.boardArray[i][j].pieceType = this.boardArray[k][l].pieceType;
     this.boardArray[i][j].addCls = this.boardArray[k][l].addCls;
   }
 
-  fill(i: any, j: any, obj: any = this.empObj) {
+  fill(i: number, j: number, obj: any = this.empObj) {
     this.boardArray[i][j].src = obj.src;
     // this.boardArray[i][j].playerC = obj.playerC; Depricated
     this.boardArray[i][j].playerType = obj.playerType;
-    this.boardArray[i][j].clipType = obj.clipType;
+    this.boardArray[i][j].pieceType = obj.pieceType;
     this.boardArray[i][j].addCls = obj.addCls;
   }
 
@@ -424,7 +434,7 @@ export class DefaultComponent implements OnInit {
       for (let y = 0; y < 8; y++) {
         if (this.boardArray[x][y].src == this.bk && this.boardArray[x][y].playerType == this.turn)
           if (kingChk)
-            this.boardArray[x][y].addCls = "kingCheck";
+            this.boardArray[x][y].addCls = "queenCheck";
       }
     }
   }
@@ -440,58 +450,58 @@ export class DefaultComponent implements OnInit {
       }
     }
     this.ckhKing(i, j, 1, 1, -1, this.bc, this.bq)
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 1, -1, -1, this.bc, this.bq);
 
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -1, 1, -1, this.bc, this.bq);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -1, -1, -1, this.bc, this.bq);
 
     if (this.turn == 'w') {
-      if (this.boardArray[i][j].addCls != "kingCheck")
+      if (this.boardArray[i][j].addCls != "queenCheck")
         this.ckhKing(i, j, -1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "kingCheck")
+      if (this.boardArray[i][j].addCls != "queenCheck")
         this.ckhKing(i, j, -1, -1, 1, this.bp);
     } else {
-      if (this.boardArray[i][j].addCls != "kingCheck")
+      if (this.boardArray[i][j].addCls != "queenCheck")
         this.ckhKing(i, j, 1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "kingCheck")
+      if (this.boardArray[i][j].addCls != "queenCheck")
         this.ckhKing(i, j, 1, -1, 1, this.bp);
     }
 
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 1, 2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -1, 2, 1, this.bh);
 
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 0, -1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 0, 1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, 1, 0, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingCheck")
+    if (this.boardArray[i][j].addCls != "queenCheck")
       this.ckhKing(i, j, -1, 0, -1, this.be, this.bq);
   }
 
-  ckhKing(i: any, j: any, stpI: any, stpJ: any, count: any, ...chkFor: any): any {
+  ckhKing(i: number, j: number, stpI: number, stpJ: number, count: number, ...chkFor: any): any {
     let ind = 1;
     while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
       if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor[0] || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor?.[1]) {
-        this.boardArray[i][j].addCls = "kingCheck"; this.isKCheck = true;
+        this.boardArray[i][j].addCls = "queenCheck"; this.isKCheck = true;
       } else if (!(this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e")) {
         break;
       }
@@ -503,36 +513,24 @@ export class DefaultComponent implements OnInit {
     }
   }
   //conditions 1///
-  checkTurnNselectedPiece(i: any, j: any): any {
+  checkTurnNselectedPiece(i: number, j: number): any {
     return this.turn == this.boardArray[i][j].playerType
   }
-  // 2
-  cond2(i: any, j: any, k: any, l: any): any {
-    if (this.boardArray[i][j].playerType == this.turn) {
-      this.boardArray[k][l].addCls = "";
-      this.boardArray[i][j].addCls = "selected";
-      this.lstInd[0] = i;
-      this.lstInd[1] = j;
-      this.optionsFP(i, j);
-      this.markKingChk(this.isKCheck);
-      return false;
-    } else {
-      return true
-    }
-  }
+
   // clesrrr
-  clearOpt(remove: any = "kingCheck") {
+  clearAllMoves(clearCheck: boolean = false) {
+    let cls = clearCheck ? "" : "queenCheck"
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
-        this.boardArray[i][j].addCls = (this.boardArray[i][j].addCls == "selected" || this.boardArray[i][j].addCls == remove) ? this.boardArray[i][j].addCls : "";
-        // this.boardArray[i][j].addCls = ''
-
+        this.boardArray[i][j].addCls =
+          (this.boardArray[i][j].addCls == "selected" || this.boardArray[i][j].addCls == cls)
+            ? this.boardArray[i][j].addCls : "";
       }
     }
   }
 
-  optionsFP(i: any, j: any) {
-    this.clearOpt();
+  markPossibleMoves(i: number, j: number) {
+    this.clearAllMoves();
     if (this.boardArray[i][j].src == this.bp) {
       let steps = -1;
       if (this.boardArray[i][j].playerType == "b") {
@@ -611,7 +609,7 @@ export class DefaultComponent implements OnInit {
     }
   }
   // options for selecteded piece 
-  chkOpt(i: any, j: any, stpI: any, stpJ: any) {
+  chkOpt(i: number, j: number, stpI: number, stpJ: number) {
     let ind = 1;
     while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
       if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
@@ -634,7 +632,7 @@ export class DefaultComponent implements OnInit {
     }
   }
 
-  dhundo(oi: any, oj: any, pi: any, pj: any): any {
+  dhundo(oi: number, oj: number, pi: number, pj: number): any {
     let i = -1, j = -1;
     if (this.boardArray[pi]?.[pj]?.src != this.bk) {
       for (let x = 0; x < 8; x++) {
@@ -691,7 +689,7 @@ export class DefaultComponent implements OnInit {
     }
   }
 
-  ckhCheck(i: any, j: any, stpI: any, stpJ: any, oi: any, oj: any, pi: any, pj: any, count: any, ...chkFor: any): any {
+  ckhCheck(i: number, j: number, stpI: number, stpJ: number, oi: number, oj: number, pi: number, pj: number, count: number, ...chkFor: any): any {
     // alert(pi + "p" + pj);
     // alert(oi + "p" + oj);
     let posVal = -1;
@@ -724,30 +722,14 @@ export class DefaultComponent implements OnInit {
   /////undo//////
   undo() {
 
-    this.clearOpt();
+    this.clearAllMoves();
     this.swip(this.recover.k, this.recover.l, this.recover.i, this.recover.j);
     this.fill(this.recover.i, this.recover.j, this.recover.obj);
 
     this.turn = (this.turn == "w") ? "b" : "w";
     this.nextTurn = (this.nextTurn == "w") ? "b" : "w";
     this.disableUndoBtn = true;
-    this.lstInd[0] = -1;
+    this.resetLastClickedPosition()
     this.findKIng();
   }
-
-  rotX(ran: any, b: any) {
-    console.log(ran.value);
-    // b.style.transform = "rotateX(" +ran.value+"deg)";
-    b.style.transform = "rotate3d(0," + -ran.value + ",1,180deg)";
-    // b.style.transform = "rotate3d(0,1,1,180deg)";
-    // console.log(b.style);
-    // this.tr = "transform : rotateX("+-(ran.value)+"deg)";
-  }
-  rotY(ran: any, b: any) {
-    console.log(ran.value);
-    // b.style.transform = "rotateX(" +ran.value+"deg)";
-    b.style.transform = "rotate3d(0,1,0," + ran.value + "deg)";
-    // console.log(b.style);
-  }
 }
-

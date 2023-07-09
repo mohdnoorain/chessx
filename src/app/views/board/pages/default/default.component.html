@@ -7,7 +7,7 @@
                 <ng-container *ngFor="let items of row; index as j;">
                     <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
                         [class.bg-dark]="(i+j)%2">
-                        <img [src]="items.src" [class]="items.clipType" [class.white]="items.playerType == 'w'" />
+                        <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
                     </div>
                 </ng-container>
             </div>
