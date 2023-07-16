@@ -4,9 +4,10 @@
     justify-content: center;
     flex-direction: column;
 
-    .turnStatus{
-        text-align: center;
+    .disableBoard {
+        pointer-events: none;
     }
+
     .row {
         display: flex;
         width: 560px;

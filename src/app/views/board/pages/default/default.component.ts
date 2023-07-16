@@ -47,24 +47,18 @@ export class DefaultComponent implements OnInit {
     } else {
     }
   }
-
-  ngOnInit(): void {
-  }
-
+  ngOnInit(): void {}
   ngOnDestroy(): void {
     this.closeConnection()
   }
-
   saveRemoteOffer(res: any) {
     console.log('saved offer')
     this.remoteOffer = JSON.parse(res.target.value)
   }
-
   saveRemoteAnswer(res: any) {
     console.log('saved answer')
     this.remoteAnswer = JSON.parse(res.target.value)
   }
-
   // step 1 L
   initRtc() {
     this.localConnection = new RTCPeerConnection()
@@ -74,7 +68,7 @@ export class DefaultComponent implements OnInit {
       if (this.localConnection) {
         let offerObj = JSON.stringify(this.localConnection.localDescription);
         offerObj = btoa(offerObj)
-        this.offer = 'http://localhost:4200/board/default?client=remote&offer=' + offerObj
+        this.offer = 'https://phylacteric-adaptio.000webhostapp.com/board/default?client=remote&offer=' + offerObj
         console.log(this.offer);
 
       } else {
@@ -97,7 +91,6 @@ export class DefaultComponent implements OnInit {
       console.log('done');
     })
   }
-
   // step 2 L
   setUpLocalChannel() {
     if (this.localConnection) {
@@ -130,13 +123,12 @@ export class DefaultComponent implements OnInit {
         this.client = ''
         this.offer = ''
         this.answer = ''
-        location.href = 'http://localhost:4200/board/default'
+        location.href = 'https://phylacteric-adaptio.000webhostapp.com/board/default'
       };
     } else {
       throw new Error("unable to setUpLocalChannel on localConnection :=> setUpLocalChannel")
     }
   }
-
   // step 3 R
   generateAnswer() {
     this.remoteConnection = new RTCPeerConnection()
@@ -171,7 +163,6 @@ export class DefaultComponent implements OnInit {
       alert('offer not set')
     }
   }
-
   // step 4 R
   setUpRemoteChannel() {
     if (this.remoteConnection) {
@@ -205,14 +196,13 @@ export class DefaultComponent implements OnInit {
           this.client = ''
           this.offer = ''
           this.answer = ''
-          location.href = 'http://localhost:4200/board/default'
+          location.href = 'https://phylacteric-adaptio.000webhostapp.com/board/default'
         };
       }
     } else {
       throw new Error("unable to setUpRemoteChannel on remoteConnection :=> setUpRemoteChannel")
     }
   }
-
   //final step 5 L
   localConnect() {
     if (this.remoteAnswer != null) {
@@ -225,7 +215,6 @@ export class DefaultComponent implements OnInit {
       alert('invalid remote ans')
     }
   }
-
   // all set 
 
   // send from local 
@@ -239,7 +228,6 @@ export class DefaultComponent implements OnInit {
       lastClickedPosition: this.lastClickedPosition
     }))
   }
-
   // send from remote 
   remoteChannelSender() {
     this.remoteChannel?.send(JSON.stringify({
@@ -251,7 +239,6 @@ export class DefaultComponent implements OnInit {
       lastClickedPosition: this.lastClickedPosition
     }))
   }
-
   // close
   closeConnection() {
     this.remoteConnection?.close()
@@ -475,6 +462,11 @@ export class DefaultComponent implements OnInit {
       this.disableUndoBtn = false;
       this.changeTurn();
       this.findKIng();
+      if(this.client == 'offer'){
+        this.offerChannelSender()
+      }else if(this.client == 'remote'){
+        this.remoteChannelSender()
+      }
     }
   }
 

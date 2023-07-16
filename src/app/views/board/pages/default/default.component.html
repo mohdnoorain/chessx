@@ -1,8 +1,8 @@
 <div class="container">
     <button style="visibility: hidden;" #hhh (click)="refreshP()"></button>
     <!-- board area  -->
-    <div *ngIf="(remoteConnectionStatus||offerConnectionStatus)">
-        <p class="turnStatus">your turn</p>
+    <div [class.disableBoard]="client == 'offer' && turn == 'b' || client == 'remote' && turn == 'w'"
+        *ngIf="(remoteConnectionStatus||offerConnectionStatus)">
         <ng-container *ngFor="let row of boardArray; index as i;">
             <div class="row">
                 <ng-container *ngFor="let items of row; index as j;">
