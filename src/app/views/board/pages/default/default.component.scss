@@ -4,6 +4,9 @@
     justify-content: center;
     flex-direction: column;
 
+    .turnStatus{
+        text-align: center;
+    }
     .row {
         display: flex;
         width: 560px;

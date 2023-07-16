@@ -105,9 +105,13 @@ export class DefaultComponent implements OnInit {
 
       this.offerChannel.onmessage = (e: any) => {
         if (e?.data) {
-          let data = JSON.parse(e?.data);
+          let data = JSON.parse(e.data);
+          this.boardArray = data.boardArray
           this.turn = data.turn
-          this.boardArray = data.arr
+          this.nextTurn = data.nextTurn
+          this.updatePawn = data.updatePawn
+          this.isKingCheckeded = data.isKingCheckeded
+          this.lastClickedPosition = data.lastClickedPosition
         } else {
           throw new Error("unable to read data onmessage on localConnection :=> setUpLocalChannel > onmessage ")
         }
@@ -123,6 +127,10 @@ export class DefaultComponent implements OnInit {
       this.offerChannel.onclose = (a) => {
         console.log("closed!!!!!!")
         this.offerConnectionStatus = false;
+        this.client = ''
+        this.offer = ''
+        this.answer = ''
+        location.href = 'http://localhost:4200/board/default'
       };
     } else {
       throw new Error("unable to setUpLocalChannel on localConnection :=> setUpLocalChannel")
@@ -173,8 +181,12 @@ export class DefaultComponent implements OnInit {
         this.remoteChannel.onmessage = (e: any) => {
           if (e.data) {
             let data = JSON.parse(e.data);
+            this.boardArray = data.boardArray
             this.turn = data.turn
-            this.boardArray = data.arr
+            this.nextTurn = data.nextTurn
+            this.updatePawn = data.updatePawn
+            this.isKingCheckeded = data.isKingCheckeded
+            this.lastClickedPosition = data.lastClickedPosition
           } else {
             throw new Error("unable to read data onmessage on remoteConnection :=> setUpRemoteChannel > onmessage ")
           }
@@ -190,6 +202,10 @@ export class DefaultComponent implements OnInit {
         this.remoteChannel.onclose = (a) => {
           console.log("closed!!!!!!")
           this.remoteConnectionStatus = false;
+          this.client = ''
+          this.offer = ''
+          this.answer = ''
+          location.href = 'http://localhost:4200/board/default'
         };
       }
     } else {
@@ -215,16 +231,24 @@ export class DefaultComponent implements OnInit {
   // send from local 
   offerChannelSender() {
     this.offerChannel?.send(JSON.stringify({
+      boardArray: this.boardArray,
       turn: this.turn,
-      arr: this.boardArray
+      nextTurn: this.nextTurn,
+      updatePawn: this.updatePawn,
+      isKingCheckeded: this.isKingCheckeded,
+      lastClickedPosition: this.lastClickedPosition
     }))
   }
 
   // send from remote 
   remoteChannelSender() {
     this.remoteChannel?.send(JSON.stringify({
+      boardArray: this.boardArray,
       turn: this.turn,
-      arr: this.boardArray
+      nextTurn: this.nextTurn,
+      updatePawn: this.updatePawn,
+      isKingCheckeded: this.isKingCheckeded,
+      lastClickedPosition: this.lastClickedPosition
     }))
   }
 
@@ -411,7 +435,7 @@ export class DefaultComponent implements OnInit {
       }
     }
   }
-      //^\\
+  //^\\
   //////|\\\\\\ checked and refactored
   move(clickedPositionI: number, clickedPositionJ: number): any {
     if (this.checkTurnNselectedPiece(clickedPositionI, clickedPositionJ)) {
@@ -455,83 +479,9 @@ export class DefaultComponent implements OnInit {
   }
 
   // to be checked and refactored
-
-  findKIng() {
-    let i = -1, j = -1;
-    for (let x = 0; x < 8; x++) {
-      for (let y = 0; y < 8; y++) {
-        if (this.boardArray[x][y].src == this.bk && this.boardArray[x][y].playerType == this.turn) {
-          i = x; j = y;
-          break;
-        }
-      }
-    }
-    this.ckhKing(i, j, 1, 1, -1, this.bc, this.bq)
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 1, -1, -1, this.bc, this.bq);
-
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -1, 1, -1, this.bc, this.bq);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -1, -1, -1, this.bc, this.bq);
-
-    if (this.turn == 'w') {
-      if (this.boardArray[i][j].addCls != "kingChecked")
-        this.ckhKing(i, j, -1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "kingChecked")
-        this.ckhKing(i, j, -1, -1, 1, this.bp);
-    } else {
-      if (this.boardArray[i][j].addCls != "kingChecked")
-        this.ckhKing(i, j, 1, 1, 1, this.bp);
-      if (this.boardArray[i][j].addCls != "kingChecked")
-        this.ckhKing(i, j, 1, -1, 1, this.bp);
-    }
-
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -2, -1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -2, 1, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 1, 2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -1, -2, 1, this.bh);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -1, 2, 1, this.bh);
-
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 0, -1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 0, 1, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, 1, 0, -1, this.be, this.bq);
-    if (this.boardArray[i][j].addCls != "kingChecked")
-      this.ckhKing(i, j, -1, 0, -1, this.be, this.bq);
-  }
-
-  ckhKing(i: number, j: number, stpI: number, stpJ: number, count: number, ...chkFor: any): any {
-    let ind = 1;
-    while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
-      if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor[0] || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor?.[1]) {
-        this.boardArray[i][j].addCls = "kingChecked"; this.isKingCheckeded = true;
-      } else if (!(this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e")) {
-        break;
-      }
-
-      if (ind == count) {
-        break;
-      }
-      ind++;
-    }
-  }
-
   markPossibleMoves(i: number, j: number) {
     this.clearAllMoves();
+    // pawn 
     if (this.boardArray[i][j].src == this.bp) {
       let steps = -1;
       if (this.boardArray[i][j].playerType == "b") {
@@ -563,18 +513,21 @@ export class DefaultComponent implements OnInit {
         }
       }
     }
+    // camel 
     else if (this.boardArray[i][j].src == this.bc) {
       this.chkOpt(i, j, 1, 1);
       this.chkOpt(i, j, 1, -1);
       this.chkOpt(i, j, -1, -1);
       this.chkOpt(i, j, -1, 1);
     }
+    // ele 
     else if (this.boardArray[i][j].src == this.be) {
       this.chkOpt(i, j, 1, 0);
       this.chkOpt(i, j, -1, 0);
       this.chkOpt(i, j, 0, -1);
       this.chkOpt(i, j, 0, 1);
     }
+    // queen 
     else if (this.boardArray[i][j].src == this.bq) {
       this.chkOpt(i, j, 1, 1);
       this.chkOpt(i, j, 1, -1);
@@ -585,6 +538,7 @@ export class DefaultComponent implements OnInit {
       this.chkOpt(i, j, 0, -1);
       this.chkOpt(i, j, 0, 1);
     }
+    // king 
     else if (this.boardArray[i][j].src == this.bk) {
       this.chkOpt(i, j, 1, 1);
       this.chkOpt(i, j, 1, -1);
@@ -595,6 +549,7 @@ export class DefaultComponent implements OnInit {
       this.chkOpt(i, j, 0, -1);
       this.chkOpt(i, j, 0, 1);
     }
+    // horse 
     else if (this.boardArray[i][j].src == this.bh) {
       this.chkOpt(i, j, 2, 1);
       this.chkOpt(i, j, 2, -1);
@@ -605,13 +560,15 @@ export class DefaultComponent implements OnInit {
       this.chkOpt(i, j, -1, -2);
       this.chkOpt(i, j, -1, 2);
     }
+    // error 
     else {
-      alert("error error.......")
+      alert("error error....... in markPossibleMoves")
     }
   }
   // options for selecteded piece 
   chkOpt(i: number, j: number, stpI: number, stpJ: number) {
     let ind = 1;
+
     while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
       if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
         if (!this.dhundo((i + (stpI * ind)), (j + (stpJ * ind)), i, j)) {
@@ -625,7 +582,6 @@ export class DefaultComponent implements OnInit {
           this.boardArray[i + (stpI * ind)][j + (stpJ * ind)].addCls = "moveOpt";
         }
       }
-
       if (this.boardArray[i][j].src == this.bk || this.boardArray[i][j].src == this.bh) {
         break;
       }
@@ -690,9 +646,65 @@ export class DefaultComponent implements OnInit {
     }
   }
 
+  findKIng() {
+    let i = -1, j = -1;
+    for (let x = 0; x < 8; x++) {
+      for (let y = 0; y < 8; y++) {
+        if (this.boardArray[x][y].src == this.bk && this.boardArray[x][y].playerType == this.turn) {
+          i = x; j = y;
+          break;
+        }
+      }
+    }
+    this.ckhKing(i, j, 1, 1, -1, this.bc, this.bq)
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 1, -1, -1, this.bc, this.bq);
+
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -1, 1, -1, this.bc, this.bq);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -1, -1, -1, this.bc, this.bq);
+
+    if (this.turn == 'w') {
+      if (this.boardArray[i][j].addCls != "kingChecked")
+        this.ckhKing(i, j, -1, 1, 1, this.bp);
+      if (this.boardArray[i][j].addCls != "kingChecked")
+        this.ckhKing(i, j, -1, -1, 1, this.bp);
+    } else {
+      if (this.boardArray[i][j].addCls != "kingChecked")
+        this.ckhKing(i, j, 1, 1, 1, this.bp);
+      if (this.boardArray[i][j].addCls != "kingChecked")
+        this.ckhKing(i, j, 1, -1, 1, this.bp);
+    }
+
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 2, 1, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 2, -1, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -2, -1, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -2, 1, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 1, 2, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 1, -2, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -1, -2, 1, this.bh);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -1, 2, 1, this.bh);
+
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 0, -1, -1, this.be, this.bq);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 0, 1, -1, this.be, this.bq);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, 1, 0, -1, this.be, this.bq);
+    if (this.boardArray[i][j].addCls != "kingChecked")
+      this.ckhKing(i, j, -1, 0, -1, this.be, this.bq);
+  }
+
   ckhCheck(i: number, j: number, stpI: number, stpJ: number, oi: number, oj: number, pi: number, pj: number, count: number, ...chkFor: any): any {
-    // alert(pi + "p" + pj);
-    // alert(oi + "p" + oj);
     let posVal = -1;
     let ind = 1;
     while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "w" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "b") {
@@ -718,6 +730,22 @@ export class DefaultComponent implements OnInit {
         break;
       }
 
+    }
+  }
+
+  ckhKing(i: number, j: number, stpI: number, stpJ: number, count: number, ...chkFor: any): any {
+    let ind = 1;
+    while (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e" || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == this.nextTurn) {
+      if (this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor[0] || this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.src == chkFor?.[1]) {
+        this.boardArray[i][j].addCls = "kingChecked"; this.isKingCheckeded = true;
+      } else if (!(this.boardArray[i + (stpI * ind)]?.[j + (stpJ * ind)]?.playerType == "e")) {
+        break;
+      }
+
+      if (ind == count) {
+        break;
+      }
+      ind++;
     }
   }
   /////undo////// undo update pawn to fix 
