@@ -12,6 +12,8 @@ export class DefaultComponent implements OnInit {
   refresh = 0;
   client = 'offer'
   refreshP() { this.refresh += 1 }
+  offercopyBtnText = 'Copy code'
+  remotecopyBtnText = 'Copy code'
 
   offerConnectionStatus = false;
   remoteConnectionStatus = false;
@@ -47,7 +49,7 @@ export class DefaultComponent implements OnInit {
     } else {
     }
   }
-  ngOnInit(): void {}
+  ngOnInit(): void { }
   ngOnDestroy(): void {
     this.closeConnection()
   }
@@ -243,6 +245,20 @@ export class DefaultComponent implements OnInit {
   closeConnection() {
     this.remoteConnection?.close()
     this.localConnection?.close()
+  }
+  copyAnswerToCB() {
+    navigator.clipboard.writeText(JSON.stringify(this.answer)).then(() => {
+      this.remotecopyBtnText = "Copied !"
+    }).catch(() => {
+      alert('unable to copy text')
+    })
+  }
+  copyOfferLinkToCB() {
+    navigator.clipboard.writeText(this.offer).then(() => {
+      this.offercopyBtnText = "Copied !"
+    }).catch(() => {
+      alert('unable to copy text')
+    })
   }
 
   ///chessx
@@ -462,9 +478,9 @@ export class DefaultComponent implements OnInit {
       this.disableUndoBtn = false;
       this.changeTurn();
       this.findKIng();
-      if(this.client == 'offer'){
+      if (this.client == 'offer') {
         this.offerChannelSender()
-      }else if(this.client == 'remote'){
+      } else if (this.client == 'remote') {
         this.remoteChannelSender()
       }
     }

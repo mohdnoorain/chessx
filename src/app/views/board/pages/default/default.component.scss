@@ -84,11 +84,26 @@
         flex-direction: column;
         align-items: center;
 
+        *{
+            margin: 20px;
+        }
         a {
-            max-width: 800px;
-            border: 2px solid red;
-            word-wrap: break-word;
-            // overflow: scroll;
+            max-width: 250px;
+            max-height: 47px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 2px solid grey;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        
+        .answerObj{
+            max-height: 47px;
+            border-radius: 5px;
+            max-width: 250px;
+            overflow: hidden;
+            padding: 5px;
+            border: 1px solid grey;
         }
     }
 }

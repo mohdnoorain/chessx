@@ -22,9 +22,11 @@
         <!-- <input placeholder="offer here" (change)="saveRemoteOffer($event)" type="text">
         <button (click)="generateAnswer()">generate anser</button> -->
         <a [href]="offer" *ngIf="offer" target="_blank">{{offer}}</a>
-        <p *ngIf="answer">{{"answer:"}} {{answer|json}}</p>
+        <button (click)="copyOfferLinkToCB()" *ngIf="offer" class="copyBtn">{{offercopyBtnText}}</button>
+        <p class="answerObj" *ngIf="answer">{{answer|json}}</p>
+        <button (click)="copyAnswerToCB()" *ngIf="answer" class="copyBtn">{{remotecopyBtnText}}</button>
         <ng-container *ngIf="offer">
-            <input placeholder="answer here" (change)="saveRemoteAnswer($event)" type="text">
+            <input placeholder="Code here" (change)="saveRemoteAnswer($event)" type="text">
             <button (click)="localConnect()">connect</button>
         </ng-container>
     </div>
