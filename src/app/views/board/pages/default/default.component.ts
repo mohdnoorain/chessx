@@ -1,5 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Component, DoCheck, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
+
+var RTMChannel: RtmChannel;
 
 @Component({
   selector: 'app-default',
@@ -7,258 +11,109 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./default.component.scss']
 })
 export class DefaultComponent implements OnInit {
-  /// connection variables
-  @ViewChild('hhh') hhh: ElementRef<HTMLButtonElement> | null = null;
-  refresh = 0;
-  client = 'offer'
-  refreshP() { this.refresh += 1 }
-  offercopyBtnText = 'Copy code'
-  remotecopyBtnText = 'Copy code'
+  appId = 'fe150a2dd676412585c762ed6453b61b'
+  RTMClient: RtmClient;
 
-  offerConnectionStatus = false;
-  remoteConnectionStatus = false;
+  opponentMid: string = ''
+  playerType: string = ''
+  status = 'idle'
+  channelName = ''
 
-  offer: any = null;
-  remoteOffer: any = null;
-  answer: any = null;
-  remoteAnswer: RTCSessionDescriptionInit | null = null;
-
-  offerChannel: RTCDataChannel | null = null;
-  remoteChannel: RTCDataChannel | null = null;
-
-  remoteConnection: RTCPeerConnection | null = null;
-  localConnection: RTCPeerConnection | null = null;
 
   constructor(private route: ActivatedRoute) {
-    let c = this.route.snapshot.queryParamMap.get('client')
-    let o = this.route.snapshot.queryParamMap.get('offer')
-    console.log(o)
-    if (c == 'remote' && o) {
-      this.client = c
-      try {
-        o = atob(o)
-        console.log(o)
-        this.remoteOffer = JSON.parse(o)
-        this.generateAnswer()
-      } catch {
-        alert('invalid url p')
-      }
-      console.log(this.remoteOffer)
-    } else if (c == 'offer') {
-
-    } else {
-    }
+    this.RTMClient = AgoraRTM.createInstance(this.appId)
   }
+
   ngOnInit(): void { }
-  ngOnDestroy(): void {
-    this.closeConnection()
-  }
-  saveRemoteOffer(res: any) {
-    console.log('saved offer')
-    this.remoteOffer = JSON.parse(res.target.value)
-  }
-  saveRemoteAnswer(res: any) {
-    console.log('saved answer')
-    this.remoteAnswer = JSON.parse(res.target.value)
-  }
-  // step 1 L
-  initRtc() {
-    this.localConnection = new RTCPeerConnection()
-    this.setUpLocalChannel()
 
-    this.localConnection.onicecandidate = (a) => {
-      if (this.localConnection) {
-        let offerObj = JSON.stringify(this.localConnection.localDescription);
-        offerObj = btoa(offerObj)
-        this.offer = 'https://phylacteric-adaptio.000webhostapp.com/board/default?client=remote&offer=' + offerObj
-        console.log(this.offer);
-
-      } else {
-        throw new Error("unable to save localDescription on localConnection :=> initRtc > onicecandidate")
-      }
-      this.hhh?.nativeElement.click()
-    }
-
-    this.localConnection.createOffer().then((o: RTCSessionDescriptionInit) => {
-      if (this.localConnection) {
-        this.localConnection.setLocalDescription(o).then((a: any) => {
-          console.log("localConnection LocalDescription set")
-        }).catch((re: any) => {
-          console.log(re)
-        })
-      } else {
-        throw new Error("unable to set localDescription on localConnection :=> initRtc > createOffer")
-      }
-    }).catch((re: any) => { console.log(re) }).then(() => {
-      console.log('done');
-    })
-  }
-  // step 2 L
-  setUpLocalChannel() {
-    if (this.localConnection) {
-      this.offerChannel = this.localConnection.createDataChannel("dataChannel");
-
-      this.offerChannel.onmessage = (e: any) => {
-        if (e?.data) {
-          let data = JSON.parse(e.data);
-          this.boardArray = data.boardArray
-          this.turn = data.turn
-          this.nextTurn = data.nextTurn
-          this.updatePawn = data.updatePawn
-          this.isKingCheckeded = data.isKingCheckeded
-          this.lastClickedPosition = data.lastClickedPosition
-        } else {
-          throw new Error("unable to read data onmessage on localConnection :=> setUpLocalChannel > onmessage ")
-        }
-        this.hhh?.nativeElement.click()
-      }
-
-      this.offerChannel.onopen = (a) => {
-        console.log("open!!!!")
-        this.offerConnectionStatus = true;
-        this.hhh?.nativeElement.click();
-      };
-
-      this.offerChannel.onclose = (a) => {
-        console.log("closed!!!!!!")
-        this.offerConnectionStatus = false;
-        this.client = ''
-        this.offer = ''
-        this.answer = ''
-        location.href = 'https://phylacteric-adaptio.000webhostapp.com/board/default'
-      };
-    } else {
-      throw new Error("unable to setUpLocalChannel on localConnection :=> setUpLocalChannel")
-    }
-  }
-  // step 3 R
-  generateAnswer() {
-    this.remoteConnection = new RTCPeerConnection()
-    this.setUpRemoteChannel()
-
-    this.remoteConnection.onicecandidate = (a) => {
-      if (this.remoteConnection) {
-        this.answer = this.remoteConnection.localDescription;
-      } else {
-        throw new Error("unable to save localDescription on remoteConnection :=> generateAnswer > onicecandidate")
-      }
-      this.hhh?.nativeElement.click()
-    }
-
-    if (this.remoteOffer) {
-      this.remoteConnection.setRemoteDescription(this.remoteOffer).then((a: any) => {
-        console.log("remoteConnection RemoteDescription set 3")
-      }).catch((re: any) => {
-        console.log(re)
-      })
-
-      this.remoteConnection.createAnswer().then((a: any) => {
-        this.remoteConnection?.setLocalDescription(a).then((a: any) => {
-          console.log("remoteConnection setLocalDescription set 3")
-        }).catch((re: any) => {
-          console.log(re)
-        })
-      }).then(() => { console.log('answer created 3') }).catch((re: any) => {
-        console.log(re)
-      })
-    } else {
-      alert('offer not set')
-    }
-  }
-  // step 4 R
-  setUpRemoteChannel() {
-    if (this.remoteConnection) {
-      this.remoteConnection.ondatachannel = (e: RTCDataChannelEvent) => {
-        this.remoteChannel = e.channel;
-
-        this.remoteChannel.onmessage = (e: any) => {
-          if (e.data) {
-            let data = JSON.parse(e.data);
-            this.boardArray = data.boardArray
-            this.turn = data.turn
-            this.nextTurn = data.nextTurn
-            this.updatePawn = data.updatePawn
-            this.isKingCheckeded = data.isKingCheckeded
-            this.lastClickedPosition = data.lastClickedPosition
-          } else {
-            throw new Error("unable to read data onmessage on remoteConnection :=> setUpRemoteChannel > onmessage ")
+  createChannel() {
+    RTMChannel = this.RTMClient.createChannel(this.channelName)
+    this.RTMClient.login({ uid: uuidv4() }).then(() => {
+      RTMChannel.join().then(() => {
+        this.status = 'waiting'
+        RTMChannel.getMembers().then((m) => {
+          if (m.length == 2) {
+            this.opponentMid = m[1]
+            this.playerType = 'remote'
+            this.status = 'started'
+          } else if (m.length > 2) {
+            this.status = 'interrupted by 3rd person'
+            console.log(m)
           }
-          this.hhh?.nativeElement.click()
-        }
-
-        this.remoteChannel.onopen = (a) => {
-          console.log("open!!!!")
-          this.remoteConnectionStatus = true;
-          this.hhh?.nativeElement.click();
-        };
-
-        this.remoteChannel.onclose = (a) => {
-          console.log("closed!!!!!!")
-          this.remoteConnectionStatus = false;
-          this.client = ''
-          this.offer = ''
-          this.answer = ''
-          location.href = 'https://phylacteric-adaptio.000webhostapp.com/board/default'
-        };
-      }
-    } else {
-      throw new Error("unable to setUpRemoteChannel on remoteConnection :=> setUpRemoteChannel")
-    }
-  }
-  //final step 5 L
-  localConnect() {
-    if (this.remoteAnswer != null) {
-      this.localConnection?.setRemoteDescription(this.remoteAnswer).then(() => {
-        console.log("connection in progress")
-      }).catch((re: any) => {
-        console.log(re)
+        })
       })
-    } else {
-      alert('invalid remote ans')
-    }
+    })
+    this.setUpChannel()
   }
-  // all set 
 
-  // send from local 
-  offerChannelSender() {
-    this.offerChannel?.send(JSON.stringify({
+  setUpChannel() {
+    RTMChannel.on('MemberJoined', (mId) => {
+      console.log('mid joined>', mId);
+      RTMChannel.getMembers().then((m) => {
+        if (m.length == 2) {
+          this.opponentMid = mId
+          this.status = 'started'
+          this.playerType = 'local'
+        } else if (m.length > 2) {
+          this.status = 'interrupted by 3rd person'
+          console.log(m)
+        }
+      })
+    })
+
+    this.RTMClient.on('MessageFromPeer', (message, mId) => {
+      let msg = JSON.parse(message.text + '')
+      console.log(msg);
+      if (msg.turn) {
+        this.boardArray = msg.boardArray
+        this.turn = msg.turn
+        this.nextTurn = msg.nextTurn
+        this.updatePawn = msg.updatePawn
+        this.isKingCheckeded = msg.isKingCheckeded
+        this.lastClickedPosition = msg.lastClickedPosition
+      } else {
+        console.log(message);
+        console.log('didnt parse');
+      }
+    })
+
+    RTMChannel.on('MemberLeft', (mId) => {
+      console.log('mid left > ', mId);
+      if (mId == this.opponentMid) {
+        this.status = "opponenet left"
+      }
+    })
+  }
+
+  pingOpponent() {
+    let msg = JSON.stringify({
       boardArray: this.boardArray,
       turn: this.turn,
       nextTurn: this.nextTurn,
       updatePawn: this.updatePawn,
       isKingCheckeded: this.isKingCheckeded,
       lastClickedPosition: this.lastClickedPosition
-    }))
-  }
-  // send from remote 
-  remoteChannelSender() {
-    this.remoteChannel?.send(JSON.stringify({
-      boardArray: this.boardArray,
-      turn: this.turn,
-      nextTurn: this.nextTurn,
-      updatePawn: this.updatePawn,
-      isKingCheckeded: this.isKingCheckeded,
-      lastClickedPosition: this.lastClickedPosition
-    }))
-  }
-  // close
-  closeConnection() {
-    this.remoteConnection?.close()
-    this.localConnection?.close()
-  }
-  copyAnswerToCB() {
-    navigator.clipboard.writeText(JSON.stringify(this.answer)).then(() => {
-      this.remotecopyBtnText = "Copied !"
-    }).catch(() => {
-      alert('unable to copy text')
     })
-  }
-  copyOfferLinkToCB() {
-    navigator.clipboard.writeText(this.offer).then(() => {
-      this.offercopyBtnText = "Copied !"
+
+    this.RTMClient.sendMessageToPeer({ text: msg }, this.opponentMid).then(() => {
+      console.log('ping from ' + this.opponentMid);
     }).catch(() => {
-      alert('unable to copy text')
+      console.log('unable to ping from ' + this.opponentMid);
     })
+
+  }
+
+  ngOnDestroy(): void { this.leave() }
+
+  leave() {
+    RTMChannel?.leave().then((e) => {
+      console.log('left ');
+      this.status = "idle"
+    }).then(async () => {
+      await this.RTMClient.logout()
+      location.reload()
+    })
+
   }
 
   ///chessx
@@ -478,11 +333,8 @@ export class DefaultComponent implements OnInit {
       this.disableUndoBtn = false;
       this.changeTurn();
       this.findKIng();
-      if (this.client == 'offer') {
-        this.offerChannelSender()
-      } else if (this.client == 'remote') {
-        this.remoteChannelSender()
-      }
+
+      this.pingOpponent()
     }
   }
 

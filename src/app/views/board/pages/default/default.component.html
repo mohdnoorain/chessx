@@ -1,12 +1,11 @@
 <div class="container">
-    <button style="visibility: hidden;" #hhh (click)="refreshP()"></button>
     <!-- board area  -->
-    <div [class.disableBoard]="client == 'offer' && turn == 'b' || client == 'remote' && turn == 'w'"
-        *ngIf="(remoteConnectionStatus||offerConnectionStatus)">
+    <div *ngIf="status == 'started'" [class.rotate]="playerType == 'remote'"
+        [class.disableBoard]="playerType == 'local' && turn == 'b' || playerType == 'remote' && turn == 'w'">
         <ng-container *ngFor="let row of boardArray; index as i;">
             <div class="row">
                 <ng-container *ngFor="let items of row; index as j;">
-                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
+                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col" [class.rotate]="playerType == 'remote'"
                         [class.bg-dark]="(i+j)%2">
                         <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
                     </div>
@@ -17,25 +16,11 @@
     </div>
     <!-- board area  -->
 
-    <div class="connect" *ngIf="!(remoteConnectionStatus||offerConnectionStatus)">
-        <button *ngIf="client != 'remote'" (click)="initRtc()">create offer</button>
-        <!-- <input placeholder="offer here" (change)="saveRemoteOffer($event)" type="text">
-        <button (click)="generateAnswer()">generate anser</button> -->
-        <a [href]="offer" *ngIf="offer" target="_blank">{{offer}}</a>
-        <button (click)="copyOfferLinkToCB()" *ngIf="offer" class="copyBtn">{{offercopyBtnText}}</button>
-        <p class="answerObj" *ngIf="answer">{{answer|json}}</p>
-        <button (click)="copyAnswerToCB()" *ngIf="answer" class="copyBtn">{{remotecopyBtnText}}</button>
-        <ng-container *ngIf="offer">
-            <input placeholder="Code here" (change)="saveRemoteAnswer($event)" type="text">
-            <button (click)="localConnect()">connect</button>
-        </ng-container>
+    <div *ngIf="status == 'waiting'||status == 'idle'" class="connect">
+        <input autofocus type="text" [(ngModel)]="channelName">
+        <button (click)="createChannel()">enter</button>
     </div>
 
-    <div *ngIf="offerConnectionStatus" class="messages">
-        <button (click)="offerChannelSender()">offer sender</button>
-    </div>
-    <div *ngIf="remoteConnectionStatus" class="messages">
-        <button (click)="remoteChannelSender()">remote sender</button>
-    </div>
-    <button *ngIf="(remoteConnectionStatus||offerConnectionStatus)" (click)="closeConnection()">close</button>
+    <p>{{'status : '+status}}</p>
+    <button (click)="leave()">Leave</button>
 </div>
