@@ -27,7 +27,7 @@ export class DefaultComponent implements OnInit {
   ngOnInit(): void { }
 
   createChannel() {
-    RTMChannel = this.RTMClient.createChannel(this.channelName)
+    RTMChannel = this.RTMClient.createChannel(String(this.channelName).toLowerCase())
     this.RTMClient.login({ uid: uuidv4() }).then(() => {
       RTMChannel.join().then(() => {
         this.status = 'waiting'
