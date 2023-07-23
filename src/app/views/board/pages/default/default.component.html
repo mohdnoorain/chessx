@@ -1,12 +1,16 @@
 <div class="container">
+    <div *ngIf="status == 'started'">
+        <p>{{localPlayer.userName}}</p>
+        <p>{{remotePlayer.userName}}</p>
+    </div>
     <!-- board area  -->
-    <div *ngIf="status == 'started'" [class.rotate]="playerType == 'remote'"
-        [class.disableBoard]="playerType == 'local' && turn == 'b' || playerType == 'remote' && turn == 'w'">
+    <div *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'remote'"
+        [class.disableBoard]="localPlayerType == 'local' && turn == 'b' || localPlayerType == 'remote' && turn == 'w'">
         <ng-container *ngFor="let row of boardArray; index as i;">
             <div class="row">
                 <ng-container *ngFor="let items of row; index as j;">
-                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col" [class.rotate]="playerType == 'remote'"
-                        [class.bg-dark]="(i+j)%2">
+                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
+                        [class.rotate]="localPlayerType == 'remote'" [class.bg-dark]="(i+j)%2">
                         <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
                     </div>
                 </ng-container>
@@ -17,8 +21,10 @@
     <!-- board area  -->
 
     <div *ngIf="status == 'waiting'||status == 'idle'" class="connect">
-        <input autofocus type="text" [(ngModel)]="channelName">
-        <button (click)="createChannel()">enter</button>
+        <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
+        <input placeholder="Room name" type="text" [(ngModel)]="channelName">
+        <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
+        <button (click)="createChannel()">Create</button>
     </div>
 
     <p>{{'status : '+status}}</p>

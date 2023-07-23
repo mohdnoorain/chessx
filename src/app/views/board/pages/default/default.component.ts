@@ -5,6 +5,39 @@ import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
 
 var RTMChannel: RtmChannel;
 
+interface boardPiece {
+  src: string
+  pieceType: string
+  addCls: string
+  playerType: string;
+}
+interface remotePlayerType {
+  mid: string,
+  userName: string
+}
+interface localPlayerType {
+  userName: string
+}
+interface messageObjType<T> {
+  type: messageType
+  data: T
+}
+enum messageType {
+  pingBoardChanges,
+  pingUserName
+}
+interface pingBoardChangesMessageType {
+  boardArray: boardPiece[][]
+  turn: string
+  nextTurn: string
+  updatePawn: boolean
+  isKingCheckeded: boolean
+  lastClickedPosition: number[]
+}
+interface pingUserNameMessageType {
+  username: string
+}
+
 @Component({
   selector: 'app-default',
   templateUrl: './default.component.html',
@@ -14,10 +47,17 @@ export class DefaultComponent implements OnInit {
   appId = 'fe150a2dd676412585c762ed6453b61b'
   RTMClient: RtmClient;
 
-  opponentMid: string = ''
-  playerType: string = ''
+  remotePlayer: remotePlayerType = {
+    mid: '',
+    userName: ''
+  }
+  localPlayer: localPlayerType = {
+    userName: ''
+  }
+  localPlayerType: string = ''
   status = 'idle'
-  channelName = ''
+  channelName = 'zxcv'
+  channelPassword = 'zxcv'
 
 
   constructor(private route: ActivatedRoute) {
@@ -27,86 +67,127 @@ export class DefaultComponent implements OnInit {
   ngOnInit(): void { }
 
   createChannel() {
-    RTMChannel = this.RTMClient.createChannel(String(this.channelName).toLowerCase())
+    let cn = String(this.channelName).toLowerCase().trim()
+    let cp = String(this.channelPassword).toLowerCase().trim()
+
+    RTMChannel = this.RTMClient.createChannel(cn + cp)
+
     this.RTMClient.login({ uid: uuidv4() }).then(() => {
+
       RTMChannel.join().then(() => {
+
         this.status = 'waiting'
-        RTMChannel.getMembers().then((m) => {
-          if (m.length == 2) {
-            this.opponentMid = m[1]
-            this.playerType = 'remote'
+        RTMChannel.getMembers().then((members: any[]) => {
+          if (members.length == 2) {
+            this.remotePlayer.mid = members[1]
+            this.localPlayerType = 'remote'
             this.status = 'started'
-          } else if (m.length > 2) {
+            this.pingUserName()
+          } else if (members.length > 2) {
             this.status = 'interrupted by 3rd person'
-            console.log(m)
+            console.log(members)
           }
         })
+      }).catch((e: any) => {
+        alert('Room joining failed')
+        console.error('e', e);
       })
+
+    }).catch((e: any) => {
+      alert('Login failed')
+      console.error('e', e);
     })
+
     this.setUpChannel()
   }
 
+
   setUpChannel() {
-    RTMChannel.on('MemberJoined', (mId) => {
+    RTMChannel.on('MemberJoined', (mId: string) => {
       console.log('mid joined>', mId);
-      RTMChannel.getMembers().then((m) => {
-        if (m.length == 2) {
-          this.opponentMid = mId
+      RTMChannel.getMembers().then((members: any[]) => {
+        if (members.length == 2) {
+          this.remotePlayer.mid = mId
           this.status = 'started'
-          this.playerType = 'local'
-        } else if (m.length > 2) {
+          this.localPlayerType = 'local'
+          this.pingUserName()
+        } else if (members.length > 2) {
           this.status = 'interrupted by 3rd person'
-          console.log(m)
+          console.log(members)
         }
       })
     })
 
-    this.RTMClient.on('MessageFromPeer', (message, mId) => {
-      let msg = JSON.parse(message.text + '')
-      console.log(msg);
-      if (msg.turn) {
-        this.boardArray = msg.boardArray
-        this.turn = msg.turn
-        this.nextTurn = msg.nextTurn
-        this.updatePawn = msg.updatePawn
-        this.isKingCheckeded = msg.isKingCheckeded
-        this.lastClickedPosition = msg.lastClickedPosition
-      } else {
-        console.log(message);
-        console.log('didnt parse');
+    this.RTMClient.on('MessageFromPeer', (message) => {
+      try {
+        let msg: messageObjType<any> = JSON.parse(message.text + '')
+        switch (msg.type) {
+          case messageType.pingBoardChanges: this.handleBoardChanges(msg.data); break;
+          case messageType.pingUserName: this.handleUserName(msg.data); break;
+          default: throw new Error('default executed')
+        }
+      } catch (e: any) {
+        console.error('something went wrong in > MessageFromPeer ' + e, message);
       }
     })
 
-    RTMChannel.on('MemberLeft', (mId) => {
+    RTMChannel.on('MemberLeft', (mId: string) => {
       console.log('mid left > ', mId);
-      if (mId == this.opponentMid) {
+      if (mId == this.remotePlayer.mid) {
         this.status = "opponenet left"
       }
     })
   }
 
-  pingOpponent() {
-    let msg = JSON.stringify({
-      boardArray: this.boardArray,
-      turn: this.turn,
-      nextTurn: this.nextTurn,
-      updatePawn: this.updatePawn,
-      isKingCheckeded: this.isKingCheckeded,
-      lastClickedPosition: this.lastClickedPosition
-    })
+  handleBoardChanges(data: pingBoardChangesMessageType) {
+    this.boardArray = data.boardArray
+    this.turn = data.turn
+    this.nextTurn = data.nextTurn
+    this.updatePawn = data.updatePawn
+    this.isKingCheckeded = data.isKingCheckeded
+    this.lastClickedPosition = data.lastClickedPosition
+  }
+  handleUserName(data: pingUserNameMessageType) {
+    this.remotePlayer.userName = data.username
+  }
 
-    this.RTMClient.sendMessageToPeer({ text: msg }, this.opponentMid).then(() => {
-      console.log('ping from ' + this.opponentMid);
+  ping(msgObj: any) {
+    this.RTMClient.sendMessageToPeer({ text: JSON.stringify(msgObj) }, this.remotePlayer.mid).then(() => {
+      console.log('ping from ' + this.remotePlayer.mid);
     }).catch(() => {
-      console.log('unable to ping from ' + this.opponentMid);
+      console.log('unable to ping from ' + this.remotePlayer.mid);
     })
+  }
 
+  pingBoardChanges() {
+    let msgObj: messageObjType<pingBoardChangesMessageType> = {
+      type: messageType.pingBoardChanges,
+      data: {
+        boardArray: this.boardArray,
+        turn: this.turn,
+        nextTurn: this.nextTurn,
+        updatePawn: this.updatePawn,
+        isKingCheckeded: this.isKingCheckeded,
+        lastClickedPosition: this.lastClickedPosition
+      }
+    }
+    this.ping(msgObj)
+  }
+
+  pingUserName() {
+    let msgObj: messageObjType<pingUserNameMessageType> = {
+      type: messageType.pingUserName,
+      data: {
+        username: this.localPlayer.userName
+      }
+    }
+    this.ping(msgObj)
   }
 
   ngOnDestroy(): void { this.leave() }
 
   leave() {
-    RTMChannel?.leave().then((e) => {
+    RTMChannel?.leave().then(() => {
       console.log('left ');
       this.status = "idle"
     }).then(async () => {
@@ -125,8 +206,8 @@ export class DefaultComponent implements OnInit {
   be: string = "assets/black/blackele.jpg";
   em: string = "";
   empObj = { src: "", pieceType: "", addCls: "", playerType: "e" };
-  blackQueenObj = { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" };
-  whiteQueenObj = { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" };
+  blackQueenObj: boardPiece = { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" };
+  whiteQueenObj: boardPiece = { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" };
   disableUndoBtn: any = true;
   turn: string = "w";
   nextTurn: string = "b";
@@ -141,7 +222,7 @@ export class DefaultComponent implements OnInit {
     obj: { src: "", pieceType: "", addCls: "", playerType: "" }
   };
 
-  boardArray = [
+  boardArray: boardPiece[][] = [
     [
       { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
       { src: this.bh, pieceType: "horse", addCls: "", playerType: "b" },
@@ -306,6 +387,8 @@ export class DefaultComponent implements OnInit {
       this.saveLastClickedPosition(clickedPositionI, clickedPositionJ);
       this.markPossibleMoves(clickedPositionI, clickedPositionJ);
       this.markPieceSelected(clickedPositionI, clickedPositionJ);
+
+      this.pingBoardChanges()
     }
     else if (this.canMove(clickedPositionI, clickedPositionJ)) {
       let lastClickedPositioI = this.lastClickedPosition[0];
@@ -334,7 +417,7 @@ export class DefaultComponent implements OnInit {
       this.changeTurn();
       this.findKIng();
 
-      this.pingOpponent()
+      this.pingBoardChanges()
     }
   }
 
