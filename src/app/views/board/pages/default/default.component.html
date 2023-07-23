@@ -1,8 +1,11 @@
 <div class="container">
-    <div *ngIf="status == 'started'">
+    <p >{{'status : '+status}}</p>
+    
+    <div *ngIf="status == 'started'" class="userNames">
         <p>{{localPlayer.userName}}</p>
         <p>{{remotePlayer.userName}}</p>
     </div>
+
     <!-- board area  -->
     <div *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'remote'"
         [class.disableBoard]="localPlayerType == 'local' && turn == 'b' || localPlayerType == 'remote' && turn == 'w'">
@@ -20,13 +23,21 @@
     </div>
     <!-- board area  -->
 
-    <div *ngIf="status == 'waiting'||status == 'idle'" class="connect">
+    <div *ngIf="status == 'idle'" class="connect">
         <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
-        <input placeholder="Room name" type="text" [(ngModel)]="channelName">
+        <input placeholder="Room ID" type="text" [(ngModel)]="channelName">
         <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
-        <button (click)="createChannel()">Create</button>
+        <button (click)="createChannel()">Enter</button>
     </div>
 
-    <p>{{'status : '+status}}</p>
-    <button (click)="leave()">Leave</button>
+    <div *ngIf="status == 'started'" class="chatBox">
+        <ng-container *ngFor="let message of chats; index as i;">
+            <p class="message" [class]="message.side" >{{message.message}}</p>
+        </ng-container>
+        <input (keyup)="pingChatMessage($event)" placeholder="message here" type="text" [(ngModel)]="chatMessage">
+    </div>
+
+    <button *ngIf="status != 'idle'" (click)="leave()">
+        Leave
+    </button>
 </div>

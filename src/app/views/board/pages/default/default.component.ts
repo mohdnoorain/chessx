@@ -24,7 +24,8 @@ interface messageObjType<T> {
 }
 enum messageType {
   pingBoardChanges,
-  pingUserName
+  pingUserName,
+  pingChatMessage,
 }
 interface pingBoardChangesMessageType {
   boardArray: boardPiece[][]
@@ -36,6 +37,14 @@ interface pingBoardChangesMessageType {
 }
 interface pingUserNameMessageType {
   username: string
+}
+interface chatMessage {
+  side: "local" | "remote",
+  message: string
+}
+interface pingChatMessageType {
+  side: "local" | "remote",
+  message: string
 }
 
 @Component({
@@ -58,6 +67,9 @@ export class DefaultComponent implements OnInit {
   status = 'idle'
   channelName = 'zxcv'
   channelPassword = 'zxcv'
+
+  chatMessage: string = ''
+  chats: chatMessage[] = []
 
 
   constructor(private route: ActivatedRoute) {
@@ -124,6 +136,7 @@ export class DefaultComponent implements OnInit {
         switch (msg.type) {
           case messageType.pingBoardChanges: this.handleBoardChanges(msg.data); break;
           case messageType.pingUserName: this.handleUserName(msg.data); break;
+          case messageType.pingChatMessage: this.handleChatMessage(msg.data); break;
           default: throw new Error('default executed')
         }
       } catch (e: any) {
@@ -149,6 +162,9 @@ export class DefaultComponent implements OnInit {
   }
   handleUserName(data: pingUserNameMessageType) {
     this.remotePlayer.userName = data.username
+  }
+  handleChatMessage(data: pingChatMessageType) {
+    this.chats.push(data)
   }
 
   ping(msgObj: any) {
@@ -182,6 +198,25 @@ export class DefaultComponent implements OnInit {
       }
     }
     this.ping(msgObj)
+  }
+
+  pingChatMessage(e: any) {
+    console.log(e);
+    if (e.keyCode == 13) {
+      let msgObj: messageObjType<pingChatMessageType> = {
+        type: messageType.pingChatMessage,
+        data: {
+          side: 'remote',
+          message: e.target.value
+        }
+      }
+      this.chats.push({
+        side: 'local',
+        message: e.target.value
+      })
+      this.ping(msgObj)
+      this.chatMessage = ''
+    }
   }
 
   ngOnDestroy(): void { this.leave() }

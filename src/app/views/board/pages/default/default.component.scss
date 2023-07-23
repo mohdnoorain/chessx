@@ -4,6 +4,13 @@
     justify-content: center;
     flex-direction: column;
 
+    .userNames {
+        border: 1px solid red;
+        width: 560px;
+        display: flex;
+        justify-content: space-between;
+    }
+
     .disableBoard {
         pointer-events: none;
     }
@@ -90,6 +97,32 @@
 
         * {
             margin: 20px;
+        }
+    }
+
+    .chatBox {
+        width: 400px;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid gray;
+        box-shadow: 2px 2px 8px 1px rgba(128, 128, 128, 0.525);
+
+        .message {
+            margin: 5px 0;
+            width: 100%;
+
+            &.local {
+                text-align: right;
+            }
+            &.remote {
+                text-align: left;
+            }
+        }
+
+        input{
+            margin-top: 10px;
         }
     }
 }
