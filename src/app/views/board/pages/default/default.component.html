@@ -1,40 +1,50 @@
 <div class="container">
-    <p >{{'status : '+status}}</p>
-    
-    <div *ngIf="status == 'started'" class="userNames">
-        <p>{{localPlayer.userName}}</p>
-        <p>{{remotePlayer.userName}}</p>
-    </div>
+    <p *ngIf="status != 'idle'" class="statusg">{{'status : '+status}}</p>
 
-    <!-- board area  -->
-    <div *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'remote'"
-        [class.disableBoard]="localPlayerType == 'local' && turn == 'b' || localPlayerType == 'remote' && turn == 'w'">
-        <ng-container *ngFor="let row of boardArray; index as i;">
-            <div class="row">
-                <ng-container *ngFor="let items of row; index as j;">
-                    <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
-                        [class.rotate]="localPlayerType == 'remote'" [class.bg-dark]="(i+j)%2">
-                        <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
+    <div class="board-chat-wrapper">
+        <!-- board area  -->
+        <div class="board" *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'remote'"
+            [class.disableBoard]="localPlayerType == 'local' && turn == 'b' || localPlayerType == 'remote' && turn == 'w'">
+            <ng-container *ngFor="let row of boardArray; index as i;">
+                <div class="row">
+                    <ng-container *ngFor="let items of row; index as j;">
+                        <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
+                            [class.rotate]="localPlayerType == 'remote'" [class.bg-dark]="(i+j)%2">
+                            <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
+                        </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+            <!-- <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button> -->
+        </div>
+        <!-- board area  -->
+        <!-- chat box -->
+        <div *ngIf="status == 'started'" class="chatBox">
+            <p class="opponentName">{{remotePlayer.userName}}</p>
+            <div class="msg-wrapper">
+                <ng-container *ngFor="let message of chats; index as i;">
+                    <div class="message-box" [class]="message.side">
+                        <p [class]="message.side" class="message">{{message.message}}</p>
                     </div>
                 </ng-container>
             </div>
-        </ng-container>
-        <!-- <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button> -->
+            <input (keyup)="pingChatMessage($event)" placeholder="message here" type="text" [(ngModel)]="chatMessage">
+        </div>
+        <!-- chat box -->
     </div>
-    <!-- board area  -->
+
+    <!-- <div *ngIf="status == 'started'" class="userNames">
+        <p>{{localPlayer.userName}}</p>
+        <p>{{remotePlayer.userName}}</p>
+    </div> -->
+
+
 
     <div *ngIf="status == 'idle'" class="connect">
         <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
         <input placeholder="Room ID" type="text" [(ngModel)]="channelName">
         <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
         <button (click)="createChannel()">Enter</button>
-    </div>
-
-    <div *ngIf="status == 'started'" class="chatBox">
-        <ng-container *ngFor="let message of chats; index as i;">
-            <p class="message" [class]="message.side" >{{message.message}}</p>
-        </ng-container>
-        <input (keyup)="pingChatMessage($event)" placeholder="message here" type="text" [(ngModel)]="chatMessage">
     </div>
 
     <button *ngIf="status != 'idle'" (click)="leave()">

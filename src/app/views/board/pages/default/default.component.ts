@@ -113,7 +113,6 @@ export class DefaultComponent implements OnInit {
     this.setUpChannel()
   }
 
-
   setUpChannel() {
     RTMChannel.on('MemberJoined', (mId: string) => {
       console.log('mid joined>', mId);
