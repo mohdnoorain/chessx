@@ -1,0 +1,18 @@
+<div class="container">
+
+    <div *ngIf="!gameType" class="modes-box" (click)="setGameMode('pWf')">
+        <img src="../../../../../assets/images/tocrop.jpg" alt="">
+        <h1>Play With Friends</h1>
+    </div>
+
+    <div *ngIf="gameType == 'pWf'" class="mode-1-entry-box">
+        <h1>Play With Friends</h1>
+        <div class="input-group">
+            <input type="text" [(ngModel)]="username" placeholder="Username">
+            <input type="text" [(ngModel)]="roomId" placeholder="Room ID">
+            <input type="text" [(ngModel)]="roomKey" placeholder="Room Key">
+            <button (click)="enterToRoom()">Enter</button>
+        </div>
+    </div>
+
+</div>

@@ -3,19 +3,23 @@ import { CommonModule } from '@angular/common';
 
 import { BoardRoutingModule } from './board-routing.module';
 import { DefaultComponent } from './pages/default/default.component';
-import { MedaiComponent } from './pages/medai/medai.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TestComponent } from './pages/test/test.component';
+import { AgoraRTMServiceService } from 'src/app/services/agora-rtmservice.service';
 
 
 @NgModule({
   declarations: [
     DefaultComponent,
-    MedaiComponent
+    TestComponent
   ],
   imports: [
     CommonModule,
     BoardRoutingModule,
-    FormsModule
+    FormsModule,
+  ],
+  providers: [
+    AgoraRTMServiceService
   ]
 })
 export class BoardModule { }

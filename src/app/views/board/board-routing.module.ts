@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './pages/default/default.component';
-import { MedaiComponent } from './pages/medai/medai.component';
+import { TestComponent } from './pages/test/test.component';
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'default' },
+  { path: '', pathMatch: 'full', redirectTo: 'test' },
   {
-    path: 'default',
+    path: 'default/:Un/:RID/:key',
     component: DefaultComponent,
   },
   {
-    path: 'media',
-    component: MedaiComponent,
+    path: 'test',
+    component: TestComponent,
   }
 ];
 

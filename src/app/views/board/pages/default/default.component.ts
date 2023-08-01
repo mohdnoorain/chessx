@@ -1,60 +1,23 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Component, DoCheck, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Route, Router } from '@angular/router';
 import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
+import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece } from 'src/app/interfaces/commonInterfaces';
+import { AgoraRTMServiceService } from 'src/app/services/agora-rtmservice.service';
+import { Subscription } from 'rxjs';
 
 var RTMChannel: RtmChannel;
-
-interface boardPiece {
-  src: string
-  pieceType: string
-  addCls: string
-  playerType: string;
-}
-interface remotePlayerType {
-  mid: string,
-  userName: string
-}
-interface localPlayerType {
-  userName: string
-}
-interface messageObjType<T> {
-  type: messageType
-  data: T
-}
-enum messageType {
-  pingBoardChanges,
-  pingUserName,
-  pingChatMessage,
-}
-interface pingBoardChangesMessageType {
-  boardArray: boardPiece[][]
-  turn: string
-  nextTurn: string
-  updatePawn: boolean
-  isKingCheckeded: boolean
-  lastClickedPosition: number[]
-}
-interface pingUserNameMessageType {
-  username: string
-}
-interface chatMessage {
-  side: "local" | "remote",
-  message: string
-}
-interface pingChatMessageType {
-  side: "local" | "remote",
-  message: string
-}
 
 @Component({
   selector: 'app-default',
   templateUrl: './default.component.html',
   styleUrls: ['./default.component.scss']
 })
-export class DefaultComponent implements OnInit {
+export class DefaultComponent implements OnInit, OnDestroy {
   appId = 'fe150a2dd676412585c762ed6453b61b'
   RTMClient: RtmClient;
+  USRTMClient: Subscription | any
+
 
   remotePlayer: remotePlayerType = {
     mid: '',
@@ -71,45 +34,63 @@ export class DefaultComponent implements OnInit {
   chatMessage: string = ''
   chats: chatMessage[] = []
 
-
-  constructor(private route: ActivatedRoute) {
+  constructor(
+    private agoraRTMServiceService: AgoraRTMServiceService,
+    private activatedRoute: ActivatedRoute,
+    private route: Router
+  ) {
     this.RTMClient = AgoraRTM.createInstance(this.appId)
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.localPlayer.userName = this.activatedRoute.snapshot.paramMap.get('Un') as string
+    this.channelName = this.activatedRoute.snapshot.paramMap.get('RID') as string
+    this.channelPassword = this.activatedRoute.snapshot.paramMap.get('key') as string
+
+    if (!(this.localPlayer.userName && this.channelName && this.channelPassword)) {
+      this.route.navigate(['/board/test']);
+      return
+    }
+    alert('fff')
+    this.USRTMClient = this.agoraRTMServiceService.RTMClient.subscribe((res: RtmClient) => {
+      let r: any = res
+      console.log(r?.session)
+      console.log(r?.connectionState)
+      if (r?.session && r?.connectionState == 'CONNECTED') {
+        this.RTMClient = res
+        this.createChannel()
+      } else {
+        this.agoraRTMServiceService.init()
+      }
+    })
+  }
 
   createChannel() {
+    console.log('after login task');
+    this.agoraRTMServiceService.gameStarted = true
     let cn = String(this.channelName).toLowerCase().trim()
     let cp = String(this.channelPassword).toLowerCase().trim()
 
     RTMChannel = this.RTMClient.createChannel(cn + cp)
+    RTMChannel.join().then(() => {
 
-    this.RTMClient.login({ uid: uuidv4() }).then(() => {
-
-      RTMChannel.join().then(() => {
-
-        this.status = 'waiting'
-        RTMChannel.getMembers().then((members: any[]) => {
-          if (members.length == 2) {
-            this.remotePlayer.mid = members[1]
-            this.localPlayerType = 'remote'
-            this.status = 'started'
-            this.pingUserName()
-          } else if (members.length > 2) {
-            this.status = 'interrupted by 3rd person'
-            console.log(members)
-          }
-        })
-      }).catch((e: any) => {
-        alert('Room joining failed')
-        console.error('e', e);
+      console.log(RTMChannel);
+      this.status = 'waiting'
+      RTMChannel.getMembers().then((members: any[]) => {
+        if (members.length == 2) {
+          this.remotePlayer.mid = members[1]
+          this.localPlayerType = 'remote'
+          this.status = 'started'
+          this.pingUserName()
+        } else if (members.length > 2) {
+          this.status = 'interrupted by 3rd person'
+          console.log(members)
+        }
       })
-
     }).catch((e: any) => {
-      alert('Login failed')
+      alert('Room joining failed')
       console.error('e', e);
     })
-
     this.setUpChannel()
   }
 
@@ -218,15 +199,20 @@ export class DefaultComponent implements OnInit {
     }
   }
 
-  ngOnDestroy(): void { this.leave() }
+  ngOnDestroy(): void {
+    let r: any = RTMChannel
+    console.log(r?.joinState);
+    r?.joinState != 'LEFT' && this.leave()
+  }
 
   leave() {
     RTMChannel?.leave().then(() => {
-      console.log('left ');
+      this.USRTMClient.unsubscribe()
+      console.log('left');
       this.status = "idle"
-    }).then(async () => {
-      await this.RTMClient.logout()
-      location.reload()
+    }).then(() => {
+      this.agoraRTMServiceService.destroy()
+      this.route.navigate(['/board/test'])
     })
 
   }

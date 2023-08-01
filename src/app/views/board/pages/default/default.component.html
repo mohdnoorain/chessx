@@ -1,5 +1,6 @@
 <div class="container">
-    <p *ngIf="status != 'idle'" class="statusg">{{'status : '+status}}</p>
+    <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p>
+    <!-- <p *ngIf="status != 'idle'" class="status">{{'this.agoraRTMServiceService.gameStarted : '+agor}}</p> -->
 
     <div class="board-chat-wrapper">
         <!-- board area  -->
@@ -32,13 +33,6 @@
         </div>
         <!-- chat box -->
     </div>
-
-    <!-- <div *ngIf="status == 'started'" class="userNames">
-        <p>{{localPlayer.userName}}</p>
-        <p>{{remotePlayer.userName}}</p>
-    </div> -->
-
-
 
     <div *ngIf="status == 'idle'" class="connect">
         <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
