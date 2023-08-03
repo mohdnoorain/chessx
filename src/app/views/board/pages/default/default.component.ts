@@ -51,7 +51,6 @@ export class DefaultComponent implements OnInit, OnDestroy {
       this.route.navigate(['/board/test']);
       return
     }
-    alert('fff')
     this.USRTMClient = this.agoraRTMServiceService.RTMClient.subscribe((res: RtmClient) => {
       let r: any = res
       console.log(r?.session)
@@ -59,6 +58,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
       if (r?.session && r?.connectionState == 'CONNECTED') {
         this.RTMClient = res
         this.createChannel()
+        alert('cc')
       } else {
         this.agoraRTMServiceService.init()
       }
@@ -181,7 +181,6 @@ export class DefaultComponent implements OnInit, OnDestroy {
   }
 
   pingChatMessage(e: any) {
-    console.log(e);
     if (e.keyCode == 13) {
       let msgObj: messageObjType<pingChatMessageType> = {
         type: messageType.pingChatMessage,

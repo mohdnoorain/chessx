@@ -12,7 +12,8 @@ const routes: Routes = [
   {
     path: 'test',
     component: TestComponent,
-  }
+  },
+  {path:"**",redirectTo:'test'}
 ];
 
 @NgModule({

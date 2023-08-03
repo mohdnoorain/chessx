@@ -8,6 +8,7 @@
     justify-content: center;
 
     .modes-box {
+        cursor: pointer;
         border-radius: 4px;
         background-color: white;
         padding: 20px;
@@ -50,6 +51,7 @@
             }
 
             button {
+                cursor: pointer;
                 border: 3px solid #ddd;
                 border-radius: 10px;
                 margin: 10px;
