@@ -1,47 +1,84 @@
 <div class="container">
-    <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p>
-    <!-- <p *ngIf="status != 'idle'" class="status">{{'this.agoraRTMServiceService.gameStarted : '+agor}}</p> -->
 
-    <div class="board-chat-wrapper">
-        <!-- board area  -->
-        <div class="board" *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'remote'"
-            [class.disableBoard]="localPlayerType == 'local' && turn == 'b' || localPlayerType == 'remote' && turn == 'w'">
-            <ng-container *ngFor="let row of boardArray; index as i;">
-                <div class="row">
-                    <ng-container *ngFor="let items of row; index as j;">
-                        <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
-                            [class.rotate]="localPlayerType == 'remote'" [class.bg-dark]="(i+j)%2">
-                            <img [src]="items.src" [class]="items.pieceType" [class.white]="items.playerType == 'w'" />
-                        </div>
-                    </ng-container>
-                </div>
-            </ng-container>
-            <!-- <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button> -->
+    <!-- loader -->
+    <div *ngIf="status == 'waiting'" class="loaderWrapper">
+        <div class="loaderBox">
+            <img [src]="loadingAssets[loadingindex].path" alt="">
+            <span>Waiting for other player...</span>
         </div>
-        <!-- board area  -->
-        <!-- chat box -->
+    </div>
+    <!-- loader -->
+
+    <!-- nav  -->
+    <div class="sidenav">
+        <button *ngIf="status != 'idle'" (click)="pingGameReset()">
+            <img src="../../../../../assets/icons/restart.svg" alt="restart.svg">
+        </button>
+        <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p>
+        <button *ngIf="status != 'idle'" (click)="leave()">
+            <img src="../../../../../assets/icons/logout.svg" alt="restart.svg">
+        </button>
+    </div>
+    <!-- nav  -->
+
+    <!-- board area  -->
+    <div class="playground">
+        <div class="boardArea">
+            <div class="ripBox Host"></div>
+            <!-- <div class="board" *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'guest'" -->
+            <div class="board" [class.rotate]="localPlayerType == 'guest'"
+                [class.disableBoard]="localPlayerType == 'host' && turn == 'b' || localPlayerType == 'guest' && turn == 'w'">
+                <ng-container *ngFor="let row of boardArray; index as i;">
+                    <div class="row">
+                        <ng-container *ngFor="let items of row; index as j;">
+                            <div [id]="'Bx'+i+''+j" (click)="move(i,j)" [class]="items.addCls" class="col"
+                                [class.rotate]="localPlayerType == 'guest'" [class.bg-dark]="(i+j)%2">
+                                <img [src]="items.src" [class]="items.pieceType"
+                                    [class.white]="items.playerType == 'w'" />
+                            </div>
+                        </ng-container>
+                    </div>
+                </ng-container>
+                <!-- <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button> -->
+            </div>
+            <div class="ripBox Guest brW"></div>
+        </div>
+    </div>
+    <!-- board area  -->
+
+    <!-- chat box -->
+    <!-- <div *ngIf="status == 'started'" class="chatBox" class="chatRoom"> -->
+    <div class="chatRoom">
+        <h2 class="label">Chat Room</h2>
         <div *ngIf="status == 'started'" class="chatBox">
-            <p class="opponentName">{{remotePlayer.userName}}</p>
-            <div class="msg-wrapper">
+            <p class="opponentName">
+                <img src="../../../../../assets/icons/account_circle.svg" alt="">
+                {{remotePlayer.userName}}
+            </p>
+            <div #msgWrapper class="msg-wrapper">
                 <ng-container *ngFor="let message of chats; index as i;">
                     <div class="message-box" [class]="message.side">
                         <p [class]="message.side" class="message">{{message.message}}</p>
                     </div>
                 </ng-container>
             </div>
-            <input (keyup)="pingChatMessage($event)" placeholder="message here" type="text" [(ngModel)]="chatMessage">
+            <input (keyup)="pingChatMessage($event)" placeholder="Type a message here" type="text"
+                [(ngModel)]="chatMessage">
         </div>
-        <!-- chat box -->
     </div>
+    <!-- chat box -->
 
-    <div *ngIf="status == 'idle'" class="connect">
-        <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
-        <input placeholder="Room ID" type="text" [(ngModel)]="channelName">
-        <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
-        <button (click)="createChannel()">Enter</button>
-    </div>
-
-    <button *ngIf="status != 'idle'" (click)="leave()">
-        Leave
-    </button>
 </div>
+
+<!-- leave btn  -->
+
+<!-- status  -->
+<!-- <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p> -->
+
+<!-- moved to test  -->
+<!-- <div *ngIf="status == 'idle'" class="connect">
+    <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
+    <input placeholder="Room ID" type="text" [(ngModel)]="channelName">
+    <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
+    <button (click)="createChannel()">Enter</button>
+</div> -->

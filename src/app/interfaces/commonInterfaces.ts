@@ -19,6 +19,7 @@ export enum messageType {
     pingBoardChanges,
     pingUserName,
     pingChatMessage,
+    pingGameReset
 }
 export interface pingBoardChangesMessageType {
     boardArray: boardPiece[][]

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
 import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece } from 'src/app/interfaces/commonInterfaces';
@@ -16,9 +16,37 @@ var RTMChannel: RtmChannel;
 export class DefaultComponent implements OnInit, OnDestroy {
   appId = 'fe150a2dd676412585c762ed6453b61b'
   RTMClient: RtmClient;
-  USRTMClient: Subscription | any
+  RTMClientSubscription: Subscription | any
+  @ViewChild('msgWrapper') msgWrapper: any;
 
-
+  loadingInterval: NodeJS.Timer|any
+  loadingindex = 0
+  loadingAssets = [
+    {
+      path: '../../../../../assets/black/blackpawn.jpg',
+      class: ''
+    },
+    {
+      path: '../../../../../assets/black/blackele.jpg',
+      class: ''
+    },
+    {
+      path: '../../../../../assets/black/blackhorse.jpg',
+      class: ''
+    },
+    {
+      path: '../../../../../assets/black/blackcamel.jpg',
+      class: ''
+    },
+    {
+      path: '../../../../../assets/black/blackking.jpg',
+      class: ''
+    },
+    {
+      path: '../../../../../assets/black/blackqueen.jpg',
+      class: ''
+    },
+  ]
   remotePlayer: remotePlayerType = {
     mid: '',
     userName: ''
@@ -27,7 +55,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
     userName: ''
   }
   localPlayerType: string = ''
-  status = 'idle'
+  status: 'idle' | 'opponenet left' | 'started' | 'waiting' | 'interrupted by 3rd person' = 'idle'
   channelName = 'zxcv'
   channelPassword = 'zxcv'
 
@@ -51,14 +79,11 @@ export class DefaultComponent implements OnInit, OnDestroy {
       this.route.navigate(['/board/test']);
       return
     }
-    this.USRTMClient = this.agoraRTMServiceService.RTMClient.subscribe((res: RtmClient) => {
-      let r: any = res
-      console.log(r?.session)
-      console.log(r?.connectionState)
-      if (r?.session && r?.connectionState == 'CONNECTED') {
+
+    this.RTMClientSubscription = this.agoraRTMServiceService.RTMClient.subscribe((res: any) => {
+      if (res?.session && res?.connectionState == 'CONNECTED') {
         this.RTMClient = res
         this.createChannel()
-        alert('cc')
       } else {
         this.agoraRTMServiceService.init()
       }
@@ -67,20 +92,22 @@ export class DefaultComponent implements OnInit, OnDestroy {
 
   createChannel() {
     console.log('after login task');
-    this.agoraRTMServiceService.gameStarted = true
     let cn = String(this.channelName).toLowerCase().trim()
     let cp = String(this.channelPassword).toLowerCase().trim()
 
     RTMChannel = this.RTMClient.createChannel(cn + cp)
     RTMChannel.join().then(() => {
 
-      console.log(RTMChannel);
       this.status = 'waiting'
+      this.loadingInterval = setInterval(() => {
+        this.loadingindex = this.loadingindex == this.loadingAssets.length - 1 ? 0 : ++this.loadingindex;
+      }, 200)
       RTMChannel.getMembers().then((members: any[]) => {
         if (members.length == 2) {
           this.remotePlayer.mid = members[1]
-          this.localPlayerType = 'remote'
+          this.localPlayerType = 'guest'
           this.status = 'started'
+          this.agoraRTMServiceService.gameStarted = true
           this.pingUserName()
         } else if (members.length > 2) {
           this.status = 'interrupted by 3rd person'
@@ -101,7 +128,8 @@ export class DefaultComponent implements OnInit, OnDestroy {
         if (members.length == 2) {
           this.remotePlayer.mid = mId
           this.status = 'started'
-          this.localPlayerType = 'local'
+          this.localPlayerType = 'host'
+          clearInterval(this.loadingInterval)
           this.pingUserName()
         } else if (members.length > 2) {
           this.status = 'interrupted by 3rd person'
@@ -117,7 +145,8 @@ export class DefaultComponent implements OnInit, OnDestroy {
           case messageType.pingBoardChanges: this.handleBoardChanges(msg.data); break;
           case messageType.pingUserName: this.handleUserName(msg.data); break;
           case messageType.pingChatMessage: this.handleChatMessage(msg.data); break;
-          default: throw new Error('default executed')
+          case messageType.pingGameReset: this.handleGameReset(msg.data); break;
+          default: { alert('default executed > MessageFromPeer > at ping'); throw new Error('default executed'); }
         }
       } catch (e: any) {
         console.error('something went wrong in > MessageFromPeer ' + e, message);
@@ -145,8 +174,15 @@ export class DefaultComponent implements OnInit, OnDestroy {
   }
   handleChatMessage(data: pingChatMessageType) {
     this.chats.push(data)
+    setTimeout(() => {
+      this.msgWrapper.nativeElement.scrollTop = 70 + this.msgWrapper.nativeElement.scrollHeight
+    }, 10);
+  }
+  handleGameReset(data: any) {
+    this.resetGame()
   }
 
+  // sender function
   ping(msgObj: any) {
     this.RTMClient.sendMessageToPeer({ text: JSON.stringify(msgObj) }, this.remotePlayer.mid).then(() => {
       console.log('ping from ' + this.remotePlayer.mid);
@@ -195,7 +231,19 @@ export class DefaultComponent implements OnInit, OnDestroy {
       })
       this.ping(msgObj)
       this.chatMessage = ''
+      setTimeout(() => {
+        this.msgWrapper.nativeElement.scrollTop = 70 + this.msgWrapper.nativeElement.scrollHeight
+      }, 10);
     }
+  }
+
+  pingGameReset() {
+    let msgObj: messageObjType<any> = {
+      type: messageType.pingGameReset,
+      data: {}
+    }
+    this.ping(msgObj)
+    this.resetGame()
   }
 
   ngOnDestroy(): void {
@@ -206,7 +254,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
 
   leave() {
     RTMChannel?.leave().then(() => {
-      this.USRTMClient.unsubscribe()
+      this.RTMClientSubscription.unsubscribe()
       console.log('left');
       this.status = "idle"
     }).then(() => {
@@ -215,6 +263,8 @@ export class DefaultComponent implements OnInit, OnDestroy {
     })
 
   }
+
+
 
   ///chessx
   bp: string = "assets/black/blackpawn.jpg";
@@ -228,8 +278,8 @@ export class DefaultComponent implements OnInit, OnDestroy {
   blackQueenObj: boardPiece = { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" };
   whiteQueenObj: boardPiece = { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" };
   disableUndoBtn: any = true;
-  turn: string = "w";
-  nextTurn: string = "b";
+  turn = "w";
+  nextTurn = "b";
   updatePawn = false;
   isKingCheckeded = false;
 
@@ -325,6 +375,95 @@ export class DefaultComponent implements OnInit, OnDestroy {
   ];
 
   lastClickedPosition: number[] = [-1, 0];
+  resetGame() {
+    this.turn = "w";
+    this.nextTurn = "b";
+    this.updatePawn = false;
+    this.isKingCheckeded = false;
+    this.lastClickedPosition = [-1, 0];
+    this.boardArray = [
+      [
+        { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
+        { src: this.bh, pieceType: "horse", addCls: "", playerType: "b" },
+        { src: this.bc, pieceType: "camel", addCls: "", playerType: "b" },
+        { src: this.bk, pieceType: "king", addCls: "", playerType: "b" },
+        { src: this.bq, pieceType: "queen", addCls: "", playerType: "b" },
+        { src: this.bc, pieceType: "camel", addCls: "", playerType: "b" },
+        { src: this.bh, pieceType: "horse", addCls: "", playerType: "b" },
+        { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
+      ],
+      [
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "b" },
+      ],
+      [
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+      ],
+      [
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+      ],
+      [
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+      ],
+      [
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+        { src: "", pieceType: "", addCls: "", playerType: "e" },
+      ],
+      [
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+        { src: this.bp, pieceType: "pawn", addCls: "", playerType: "w" },
+      ],
+      [
+        { src: this.be, pieceType: "ele", addCls: "", playerType: "w" },
+        { src: this.bh, pieceType: "horse", addCls: "", playerType: "w" },
+        { src: this.bc, pieceType: "camel", addCls: "", playerType: "w" },
+        { src: this.bk, pieceType: "king", addCls: "", playerType: "w" },
+        { src: this.bq, pieceType: "queen", addCls: "", playerType: "w" },
+        { src: this.bc, pieceType: "camel", addCls: "", playerType: "w" },
+        { src: this.bh, pieceType: "horse", addCls: "", playerType: "w" },
+        { src: this.be, pieceType: "ele", addCls: "", playerType: "w" },
+      ]
+    ];
+  }
   saveLastClickedPosition(i: number, j: number) {
     this.lastClickedPosition[0] = i;
     this.lastClickedPosition[1] = j;
