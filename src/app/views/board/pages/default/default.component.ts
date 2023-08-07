@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
-import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece } from 'src/app/interfaces/commonInterfaces';
+import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece, RipBoardPiece } from 'src/app/interfaces/commonInterfaces';
 import { AgoraRTMServiceService } from 'src/app/services/agora-rtmservice.service';
 import { Subscription } from 'rxjs';
 
@@ -19,7 +19,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
   RTMClientSubscription: Subscription | any
   @ViewChild('msgWrapper') msgWrapper: any;
 
-  loadingInterval: NodeJS.Timer|any
+  loadingInterval: NodeJS.Timer | any
   loadingindex = 0
   loadingAssets = [
     {
@@ -85,7 +85,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
         this.RTMClient = res
         this.createChannel()
       } else {
-        this.agoraRTMServiceService.init()
+        // this.agoraRTMServiceService.init()
       }
     })
   }
@@ -291,6 +291,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
     obj: { src: "", pieceType: "", addCls: "", playerType: "" }
   };
 
+  ripPiecesArr: RipBoardPiece[] = []
   boardArray: boardPiece[][] = [
     [
       { src: this.be, pieceType: "ele", addCls: "", playerType: "b" },
@@ -555,6 +556,27 @@ export class DefaultComponent implements OnInit, OnDestroy {
       this.removeAddCls(clickedPositionI, clickedPositionJ);
       this.removeAddCls(lastClickedPositioI, lastClickedPositioJ);
       this.savePieceToRecoveryObj(clickedPositionI, clickedPositionJ);
+      if (this.boardArray[clickedPositionI][clickedPositionJ].pieceType) {
+        let ripPiece = this.boardArray[clickedPositionI][clickedPositionJ]
+        let saveIndex = -1
+        this.ripPiecesArr.forEach((piece, i) => {
+          if (piece.playerType == ripPiece.playerType && piece.pieceType == ripPiece.pieceType) {
+            saveIndex = i
+          }
+        })
+        if (saveIndex != -1) {
+          this.ripPiecesArr[saveIndex].count++
+        } else {
+          this.ripPiecesArr.push(
+            {
+              pieceType: this.boardArray[clickedPositionI][clickedPositionJ].pieceType,
+              playerType: this.boardArray[clickedPositionI][clickedPositionJ].playerType,
+              src: this.boardArray[clickedPositionI][clickedPositionJ].src,
+              count: 1
+            }
+          )
+        }
+      }
       this.moveSelectedPiece(clickedPositionI, clickedPositionJ, lastClickedPositioI, lastClickedPositioJ);
 
       // UpgratePieceType

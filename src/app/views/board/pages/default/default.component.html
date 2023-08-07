@@ -1,20 +1,9 @@
 <div class="container">
-
-    <!-- loader -->
-    <div *ngIf="status == 'waiting'" class="loaderWrapper">
-        <div class="loaderBox">
-            <img [src]="loadingAssets[loadingindex].path" alt="">
-            <span>Waiting for other player...</span>
-        </div>
-    </div>
-    <!-- loader -->
-
     <!-- nav  -->
     <div class="sidenav">
         <button *ngIf="status != 'idle'" (click)="pingGameReset()">
             <img src="../../../../../assets/icons/restart.svg" alt="restart.svg">
         </button>
-        <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p>
         <button *ngIf="status != 'idle'" (click)="leave()">
             <img src="../../../../../assets/icons/logout.svg" alt="restart.svg">
         </button>
@@ -23,8 +12,16 @@
 
     <!-- board area  -->
     <div class="playground">
+        <h3 *ngIf="status == 'idle'" class="status">{{'status : '+status}}</h3>
         <div class="boardArea">
-            <div class="ripBox Host"></div>
+            <div class="ripBox host">
+                <ng-container *ngFor="let piece of ripPiecesArr">
+                    <div *ngIf="piece.playerType == 'w'">
+                        <img [class]="piece.pieceType" [class.white]="true" [src]="piece.src" alt="piece.src">
+                        <span>{{piece.count}}</span>
+                    </div>
+                </ng-container>
+            </div>
             <!-- <div class="board" *ngIf="status == 'started'" [class.rotate]="localPlayerType == 'guest'" -->
             <div class="board" [class.rotate]="localPlayerType == 'guest'"
                 [class.disableBoard]="localPlayerType == 'host' && turn == 'b' || localPlayerType == 'guest' && turn == 'w'">
@@ -41,7 +38,14 @@
                 </ng-container>
                 <!-- <button (click)="undo()" [disabled]="disableUndoBtn">UNDO</button> -->
             </div>
-            <div class="ripBox Guest brW"></div>
+            <div class="ripBox guest">
+                <ng-container *ngFor="let piece of ripPiecesArr">
+                    <div *ngIf="piece.playerType == 'b'">
+                        <img [class]="piece.pieceType" [src]="piece.src" alt="piece.src">
+                        <span>{{piece.count}}</span>
+                    </div>
+                </ng-container>
+            </div>
         </div>
     </div>
     <!-- board area  -->
@@ -68,6 +72,14 @@
     </div>
     <!-- chat box -->
 
+    <!-- loader -->
+    <div *ngIf="status == 'waiting'" class="loaderWrapper">
+        <div class="loaderBox">
+            <img [src]="loadingAssets[loadingindex].path" alt="">
+            <span>Waiting for other player...</span>
+        </div>
+    </div>
+    <!-- loader -->
 </div>
 
 <!-- leave btn  -->

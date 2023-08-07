@@ -1,7 +1,7 @@
 .container {
     height: 100vh;
-    width: 100vw;
-    // border: 4px solid var(--dark);
+    width: 100%;
+    border: 4px solid var(--dark);
     background-color: var(--bg);
     display: flex;
 
@@ -48,11 +48,6 @@
         justify-content: space-between;
         background-color: black;
 
-        .status {
-            text-transform: capitalize;
-            color: white;
-        }
-
         button {
             display: flex;
             padding: 10px;
@@ -77,8 +72,15 @@
         // vars local 
         flex-grow: 1;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: space-evenly;
+
+        .status {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            text-transform: capitalize;
+            color: var(--primary);
+        }
 
         .boardArea {
             display: flex;
@@ -112,11 +114,14 @@
                         background-color: rgb(247, 247, 247);
 
                         &:hover {
-                            border: 2px solid black;
+                            border: 5px dashed var(--dark) !important;
+                            scale: 0.98;
+                            z-index: 99;
                         }
 
                         &.bg-dark {
-                            background-color: rgb(51, 248, 255) !important;
+                            // background-color: rgb(51, 248, 255) !important;
+                            background-color: var(--darkPrimary) !important;
                         }
 
                         img {
@@ -155,11 +160,15 @@
                     }
 
                     .selected {
-                        border: 2px dashed black !important;
+                        border: 5px dashed var(--dark) !important;
+                        scale: 0.98;
+                        z-index: 99;
                     }
 
                     .moveOpt {
-                        border: 2px solid rgb(0, 0, 0);
+                        border: 5px dashed var(--lightPrimary) !important;
+                        scale: 0.98;
+                        z-index: 99;
                     }
 
                     .kingChecked {
@@ -179,10 +188,65 @@
             }
 
             .ripBox {
-                height: calc(var(--boardHeight)/2);
+                padding-bottom: 25px;
                 width: calc(var(--boardWidth)/8);
+                height: min-content;
+                // height: calc((var(--boardWidth)/8)*5);
                 border: 3.5px solid rgba(0, 0, 0, 0.61);
+                // background-color: var(--bg);
                 border-radius: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                span{
+                    transform: translateX(-10px);
+                }
+                img {
+
+                    //clipping classes
+                    &.pawn {
+                        clip-path: polygon(15% 45%, 85% 45%, 100% 100%, 0% 100%, 10% 80%);
+                    }
+
+                    &.king {
+                        clip-path: polygon(20% 1%, 80% 1%, 100% 100%, 0% 100%);
+                    }
+
+                    &.queen {
+                        clip-path: polygon(20% 9%, 80% 9%, 100% 100%, 0% 100%);
+                    }
+
+                    &.camel {
+                        clip-path: polygon(20% 20%, 80% 20%, 100% 100%, 0% 100%);
+                    }
+
+                    &.horse {
+                        clip-path: polygon(0% 23%, 100% 23%, 100% 100%, 0% 100%);
+                    }
+
+                    &.ele {
+                        clip-path: polygon(17% 33%, 83% 33%, 100% 100%, 0% 100%);
+                    }
+                }
+
+                &.host {
+                    img {
+                        height: calc(var(--boardHeight)/8);
+
+                        &.white {
+                            filter: invert(1);
+                        }
+
+
+                    }
+                }
+
+                &.guest {
+                    img {
+                        height: calc(var(--boardHeight)/8);
+                    }
+                }
             }
         }
     }

@@ -2,7 +2,13 @@ export interface boardPiece {
     src: string
     pieceType: string
     addCls: string
-    playerType: string;
+    playerType: "b" | "w" | "e";
+}
+export interface RipBoardPiece {
+    src: string
+    pieceType: string
+    playerType: "b" | "w" | "e"
+    count:number
 }
 export interface remotePlayerType {
     mid: string,
