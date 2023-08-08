@@ -9,7 +9,6 @@
         position: absolute;
         height: 100%;
         width: 100%;
-        border: 2px solid red;
         background-color: #000000b9;
         z-index: 1;
         display: flex;
@@ -85,7 +84,7 @@
         .boardArea {
             display: flex;
             height: max-content;
-            align-items: center;
+            align-items: end;
             background-color: #fff;
             border-radius: 23px;
             padding: 20px;
@@ -188,21 +187,59 @@
             }
 
             .ripBox {
-                padding-bottom: 25px;
-                width: calc(var(--boardWidth)/8);
+                // padding-bottom: 25px;
+                // width: calc(var(--boardWidth)/8);
+                width: 120px;
                 height: min-content;
                 // height: calc((var(--boardWidth)/8)*5);
-                border: 3.5px solid rgba(0, 0, 0, 0.61);
                 // background-color: var(--bg);
-                border-radius: 20px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
 
-                span{
-                    transform: translateX(-10px);
+                .user-info {
+                    border-radius: 20px;
+                    border: 3.5px solid rgba(0, 0, 0, 0.61);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 10px 5px;
+
+                    img {
+                        width: 70px;
+                    }
+
+                    h3 {
+                        font-size: 21px;
+                        font-weight: bolder;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: var(--dark);
+                    }
                 }
+
+                .ripPieces {
+                    span {
+                        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+                        display: block;
+                        border: 0.5px solid rgb(255, 255, 255);
+                        width: 20px;
+                        height: 20px;
+                        background-color: var(--darkPrimary);
+                        color: var(--bg);
+                        border-radius: 10px;
+                        text-align: center;
+                        position: relative;
+                        top: -15px;
+                        right: -20px;
+                    }
+                }
+
                 img {
+                    &.white {
+                        filter: invert(1);
+                    }
+
+                    height: calc(var(--boardHeight)/8);
 
                     //clipping classes
                     &.pawn {
@@ -230,23 +267,6 @@
                     }
                 }
 
-                &.host {
-                    img {
-                        height: calc(var(--boardHeight)/8);
-
-                        &.white {
-                            filter: invert(1);
-                        }
-
-
-                    }
-                }
-
-                &.guest {
-                    img {
-                        height: calc(var(--boardHeight)/8);
-                    }
-                }
             }
         }
     }

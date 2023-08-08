@@ -8,7 +8,7 @@ export interface RipBoardPiece {
     src: string
     pieceType: string
     playerType: "b" | "w" | "e"
-    count:number
+    count: number
 }
 export interface remotePlayerType {
     mid: string,
@@ -34,6 +34,7 @@ export interface pingBoardChangesMessageType {
     updatePawn: boolean
     isKingCheckeded: boolean
     lastClickedPosition: number[]
+    ripPiecesArr: RipBoardPiece[]
 }
 export interface pingUserNameMessageType {
     username: string

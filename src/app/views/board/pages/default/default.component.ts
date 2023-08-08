@@ -85,7 +85,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
         this.RTMClient = res
         this.createChannel()
       } else {
-        // this.agoraRTMServiceService.init()
+        this.agoraRTMServiceService.init()
       }
     })
   }
@@ -168,6 +168,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
     this.updatePawn = data.updatePawn
     this.isKingCheckeded = data.isKingCheckeded
     this.lastClickedPosition = data.lastClickedPosition
+    this.ripPiecesArr = data.ripPiecesArr
   }
   handleUserName(data: pingUserNameMessageType) {
     this.remotePlayer.userName = data.username
@@ -196,6 +197,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
       type: messageType.pingBoardChanges,
       data: {
         boardArray: this.boardArray,
+        ripPiecesArr: this.ripPiecesArr,
         turn: this.turn,
         nextTurn: this.nextTurn,
         updatePawn: this.updatePawn,
