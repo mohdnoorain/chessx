@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RtmClient } from 'agora-rtm-sdk';
 import { AgoraRTMServiceService } from 'src/app/services/agora-rtmservice.service';
 
@@ -12,17 +12,19 @@ export class TestComponent implements OnInit {
 
   gameType = ''
   username = ''
-  roomId = ''
-  roomKey = ''
+  channelId: string = ''
+  btnText = "Create Game"
   constructor(
-    private agoraRTMServiceService: AgoraRTMServiceService,
-    private router: Router
+    private activatedRoute: ActivatedRoute,
+    private route: Router
   ) { }
 
   ngOnInit(): void {
-    // this.agoraRTMServiceService.RTMClient.subscribe((res: RtmClient) => {
-    //   console.log(res)
-    // })
+    this.channelId = this.activatedRoute.snapshot.paramMap.get('cId') as string
+    if (this.channelId) {
+      this.btnText = "Join Game"
+      this.gameType = 'pWf'
+    }
   }
 
   setGameMode(type: string) {
@@ -30,6 +32,10 @@ export class TestComponent implements OnInit {
   }
 
   enterToRoom() {
-    this.router.navigate(['/board/default', this.username, this.roomId, this.roomKey])
+    if (this.channelId) {
+      this.route.navigate(['/board/default', this.username, this.channelId])
+    } else {
+      this.route.navigate(['/board/default', this.username])
+    }
   }
 }

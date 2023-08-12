@@ -47,3 +47,29 @@ export interface pingChatMessageType {
     side: "local" | "remote",
     message: string
 }
+
+export interface statusType {
+    code: number,
+    message: string
+}
+
+export enum gameIdle {
+    code = 1,
+    message = 'idle'
+}
+export enum gameWaiting {
+    code = 2,
+    message = 'waiting'
+}
+export enum gameStarted {
+    code = 3,
+    message = 'started'
+}
+export enum gameLeft {
+    code = 4,
+    message = 'left'
+}
+export enum gameInterrupted {
+    code = 5,
+    message = 'interrupted'
+}

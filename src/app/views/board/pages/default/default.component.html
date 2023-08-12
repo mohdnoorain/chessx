@@ -1,10 +1,10 @@
 <div class="container">
     <!-- nav  -->
     <div class="sidenav">
-        <button *ngIf="status != 'idle'" (click)="pingGameReset()">
+        <button (click)="pingGameReset()">
             <img src="../../../../../assets/icons/restart.svg" alt="restart.svg">
         </button>
-        <button *ngIf="status != 'idle'" (click)="leave()">
+        <button title="Leave" *ngIf="status.code != 1" (click)="leave()">
             <img src="../../../../../assets/icons/logout.svg" alt="restart.svg">
         </button>
     </div>
@@ -12,14 +12,28 @@
 
     <!-- board area  -->
     <div class="playground">
-        <h3 *ngIf="status != 'idle'" class="status">{{'status : '+status}}</h3>
-        <div class="boardArea">
+        <h3 *ngIf="status.code > 3" class="status">{{'status : '+status.message}}</h3>
+        <div *ngIf="status.code == 2" class="joinLink">
+            <h3>{{joinLink}} </h3>
+            <button (click)="copyLink()">
+              Share Invite Link 
+               <img *ngIf="linkClicked" src="../../../../../assets/icons/content_copy_fill.svg" alt="">
+               <img *ngIf="!linkClicked" src="../../../../../assets/icons/content_copy.svg" alt="">
+            </button>
+        </div>
 
+        <div *ngIf="status.code < 3" class="loaderBox">
+            <img [src]="loadingAssets[loadingindex].path" alt="">
+            <span> {{status.code == 1 ? 'Joining...':'Waiting for other player...'}} </span>
+        </div>
+        <div *ngIf="status.code == 3" class="boardArea">
             <div class="ripBox host">
                 <ng-container *ngFor="let piece of ripPiecesArr">
-                    <div class="ripPieces" *ngIf="localPlayerType == 'host' && piece.playerType == 'w' || localPlayerType == 'guest' && piece.playerType == 'b'">
-                        <img [class]="piece.pieceType" [class.white]="piece.playerType == 'w'" [src]="piece.src" alt="piece.src">
-                        <span *ngIf="piece.count > 1" >{{piece.count}}</span>
+                    <div class="ripPieces"
+                        *ngIf="localPlayerType == 'host' && piece.playerType == 'w' || localPlayerType == 'guest' && piece.playerType == 'b'">
+                        <img [class]="piece.pieceType" [class.white]="piece.playerType == 'w'" [src]="piece.src"
+                            alt="piece.src">
+                        <span *ngIf="piece.count > 1">{{piece.count}}</span>
                     </div>
                 </ng-container>
                 <div class="user-info">
@@ -46,8 +60,10 @@
 
             <div class="ripBox guest">
                 <ng-container *ngFor="let piece of ripPiecesArr">
-                    <div class="ripPieces" *ngIf="localPlayerType == 'host' && piece.playerType == 'b' || localPlayerType == 'guest' && piece.playerType == 'w'">
-                        <img [class]="piece.pieceType" [class.white]="piece.playerType == 'w'" [src]="piece.src" alt="piece.src">
+                    <div class="ripPieces"
+                        *ngIf="localPlayerType == 'host' && piece.playerType == 'b' || localPlayerType == 'guest' && piece.playerType == 'w'">
+                        <img [class]="piece.pieceType" [class.white]="piece.playerType == 'w'" [src]="piece.src"
+                            alt="piece.src">
                         <span *ngIf="piece.count > 1">{{piece.count}}</span>
                     </div>
                 </ng-container>
@@ -62,9 +78,9 @@
 
     <!-- chat box -->
     <!-- <div *ngIf="status == 'started'" class="chatBox" class="chatRoom"> -->
-    <div class="chatRoom">
+    <div *ngIf="status.code == 3" class="chatRoom">
         <h2 class="label">Chat Room</h2>
-        <div *ngIf="status == 'started'" class="chatBox">
+        <div class="chatBox">
             <p class="opponentName">
                 <img src="../../../../../assets/icons/account_circle.svg" alt="">
                 {{remotePlayer.userName}}
@@ -83,24 +99,13 @@
     <!-- chat box -->
 
     <!-- loader -->
-    <div *ngIf="status == 'waiting'" class="loaderWrapper">
+    <div *ngIf="status.code > 3" class="loaderWrapper">
         <div class="loaderBox">
-            <img [src]="loadingAssets[loadingindex].path" alt="">
-            <span>Waiting for other player...</span>
+            <h4>{{status.code == 4 ? remotePlayer.userName+" Left the game":"we are sorry something went wrong !"}}</h4>
+            <button title="Leave" *ngIf="status.code != 1" (click)="leave()">
+                <img src="../../../../../assets/icons/logout.svg" alt="restart.svg">
+            </button>
         </div>
     </div>
     <!-- loader -->
 </div>
-
-<!-- leave btn  -->
-
-<!-- status  -->
-<!-- <p *ngIf="status != 'idle'" class="status">{{'status : '+status}}</p> -->
-
-<!-- moved to test  -->
-<!-- <div *ngIf="status == 'idle'" class="connect">
-    <input autofocus placeholder="Username" type="text" [(ngModel)]="localPlayer.userName">
-    <input placeholder="Room ID" type="text" [(ngModel)]="channelName">
-    <input type="text" placeholder="Room Password" [(ngModel)]="channelPassword">
-    <button (click)="createChannel()">Enter</button>
-</div> -->

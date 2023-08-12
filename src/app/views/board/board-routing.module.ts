@@ -6,8 +6,16 @@ import { TestComponent } from './pages/test/test.component';
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'test' },
   {
-    path: 'default/:Un/:RID/:key',
+    path: 'default/:Un/:cId',
     component: DefaultComponent,
+  },
+  {
+    path: 'default/:Un',
+    component: DefaultComponent,
+  },
+  {
+    path: 'test/:cId',
+    component: TestComponent,
   },
   {
     path: 'test',

@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import AgoraRTM, { RtmChannel, RtmClient } from 'agora-rtm-sdk';
-import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece, RipBoardPiece } from 'src/app/interfaces/commonInterfaces';
+import { remotePlayerType, localPlayerType, chatMessage, messageObjType, messageType, pingBoardChangesMessageType, pingUserNameMessageType, pingChatMessageType, boardPiece, RipBoardPiece, statusType, gameStarted, gameIdle, gameInterrupted, gameWaiting, gameLeft } from 'src/app/interfaces/commonInterfaces';
 import { AgoraRTMServiceService } from 'src/app/services/agora-rtmservice.service';
 import { Subscription } from 'rxjs';
 
@@ -55,10 +55,12 @@ export class DefaultComponent implements OnInit, OnDestroy {
     userName: ''
   }
   localPlayerType: string = ''
-  status: 'idle' | 'opponenet left' | 'started' | 'waiting' | 'interrupted by 3rd person' = 'idle'
-  channelName = 'zxcv'
-  channelPassword = 'zxcv'
 
+  // status: 'idle' | 'opponenet left' | 'started' | 'waiting' | 'interrupted by 3rd person' = 'idle'
+  status: statusType = gameIdle
+  joinLink: string = ''
+  linkClicked: boolean = false
+  channelId = ''
   chatMessage: string = ''
   chats: chatMessage[] = []
 
@@ -72,14 +74,19 @@ export class DefaultComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.localPlayer.userName = this.activatedRoute.snapshot.paramMap.get('Un') as string
-    this.channelName = this.activatedRoute.snapshot.paramMap.get('RID') as string
-    this.channelPassword = this.activatedRoute.snapshot.paramMap.get('key') as string
+    this.channelId = this.activatedRoute.snapshot.paramMap.get('cId') as string
 
-    if (!(this.localPlayer.userName && this.channelName && this.channelPassword)) {
+    if (!(this.localPlayer.userName)) {
       this.route.navigate(['/board/test']);
       return
     }
 
+    // start joining loader 
+    this.loadingInterval = setInterval(() => {
+      this.loadingindex = this.loadingindex == this.loadingAssets.length - 1 ? 0 : ++this.loadingindex;
+    }, 200)
+
+    // init RTM 
     this.RTMClientSubscription = this.agoraRTMServiceService.RTMClient.subscribe((res: any) => {
       if (res?.session && res?.connectionState == 'CONNECTED') {
         this.RTMClient = res
@@ -90,35 +97,55 @@ export class DefaultComponent implements OnInit, OnDestroy {
     })
   }
 
+  copyLink() {
+    navigator.clipboard.writeText(this.joinLink);
+    this.linkClicked = true
+  }
+
   createChannel() {
-    console.log('after login task');
-    let cn = String(this.channelName).toLowerCase().trim()
-    let cp = String(this.channelPassword).toLowerCase().trim()
+    if (this.channelId) {
+      this.RTMClient.getChannelAttributes(this.channelId).then((a: any) => {
+        if (a?.data?.value != 'pWf') {
+          alert('invalid link ')
+          this.route.navigate(['/board/test']);
+        } else {
+          RTMChannel = this.RTMClient.createChannel(this.channelId)
+          this.joinChannel()
+        }
+      }).catch((e) => { alert('can not get attribute') })
+    } else {
+      this.channelId = uuidv4()
+      console.log('new id', this.channelId);
+      RTMChannel = this.RTMClient.createChannel(this.channelId)
+      this.RTMClient.setChannelAttributes(this.channelId, { data: 'pWf' }).then(() => { }).catch((e) => {
+        alert('can not set attribe after createChannel')
+      })
+      this.joinChannel()
+    }
+  }
 
-    RTMChannel = this.RTMClient.createChannel(cn + cp)
+  joinChannel() {
     RTMChannel.join().then(() => {
-
-      this.status = 'waiting'
-      this.loadingInterval = setInterval(() => {
-        this.loadingindex = this.loadingindex == this.loadingAssets.length - 1 ? 0 : ++this.loadingindex;
-      }, 200)
       RTMChannel.getMembers().then((members: any[]) => {
         if (members.length == 2) {
           this.remotePlayer.mid = members[1]
           this.localPlayerType = 'guest'
-          this.status = 'started'
+          this.status = gameStarted
           this.agoraRTMServiceService.gameStarted = true
           this.pingUserName()
         } else if (members.length > 2) {
-          this.status = 'interrupted by 3rd person'
+          this.status = gameInterrupted
           console.log(members)
+        } else {
+          this.status = gameWaiting
+          this.joinLink = 'http://localhost:4200/board/test/' + this.channelId
         }
       })
+      this.setUpChannel()
     }).catch((e: any) => {
       alert('Room joining failed')
       console.error('e', e);
     })
-    this.setUpChannel()
   }
 
   setUpChannel() {
@@ -127,12 +154,12 @@ export class DefaultComponent implements OnInit, OnDestroy {
       RTMChannel.getMembers().then((members: any[]) => {
         if (members.length == 2) {
           this.remotePlayer.mid = mId
-          this.status = 'started'
+          this.status = gameStarted
           this.localPlayerType = 'host'
           clearInterval(this.loadingInterval)
           this.pingUserName()
         } else if (members.length > 2) {
-          this.status = 'interrupted by 3rd person'
+          this.status = gameInterrupted
           console.log(members)
         }
       })
@@ -156,7 +183,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
     RTMChannel.on('MemberLeft', (mId: string) => {
       console.log('mid left > ', mId);
       if (mId == this.remotePlayer.mid) {
-        this.status = "opponenet left"
+        this.status = gameLeft
       }
     })
   }
@@ -182,7 +209,6 @@ export class DefaultComponent implements OnInit, OnDestroy {
   handleGameReset(data: any) {
     this.resetGame()
   }
-
   // sender function
   ping(msgObj: any) {
     this.RTMClient.sendMessageToPeer({ text: JSON.stringify(msgObj) }, this.remotePlayer.mid).then(() => {
@@ -250,7 +276,6 @@ export class DefaultComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     let r: any = RTMChannel
-    console.log(r?.joinState);
     r?.joinState != 'LEFT' && this.leave()
   }
 
@@ -258,7 +283,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
     RTMChannel?.leave().then(() => {
       this.RTMClientSubscription.unsubscribe()
       console.log('left');
-      this.status = "idle"
+      this.status = gameIdle
     }).then(() => {
       this.agoraRTMServiceService.destroy()
       this.route.navigate(['/board/test'])
@@ -466,6 +491,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
         { src: this.be, pieceType: "ele", addCls: "", playerType: "w" },
       ]
     ];
+    this.ripPiecesArr = []
   }
   saveLastClickedPosition(i: number, j: number) {
     this.lastClickedPosition[0] = i;
