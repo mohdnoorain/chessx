@@ -138,7 +138,7 @@ export class DefaultComponent implements OnInit, OnDestroy {
           console.log(members)
         } else {
           this.status = gameWaiting
-          this.joinLink = 'http://localhost:4200/board/test/' + this.channelId
+          this.joinLink = window.location.host + '/board/test/' + this.channelId
         }
       })
       this.setUpChannel()
